@@ -47,7 +47,7 @@ export type Ficha = {
   observaciones: string | null;
   recomendaciones: string | null;
   indicaciones_recepcion: string | null;
-  [campo: string]: string | null; // pares *_od / *_oi
+  [campo: string]: string | number | boolean | null; // pares *_od / *_oi y datos del certificado
 };
 
 // ---------- Validacion de lo que llega del formulario ----------
@@ -74,6 +74,16 @@ const shape: Record<string, z.ZodType> = {
   color: texto(60),
   bifocal: z.preprocess((v) => v === "on", z.boolean()),
 };
+// Datos que lleva el certificado impreso
+shape.avh_condicion = texto(60);
+shape.avh_od = texto(30);
+shape.avh_oi = texto(30);
+shape.rx_tipo = texto(30);
+shape.cie_od = texto(60);
+shape.cie_oi = texto(60);
+shape.test_colores = texto(60);
+shape.necesita_lentes = z.preprocess((v) => (v === "si" ? true : v === "no" ? false : null), z.boolean().nullable());
+shape.control_meses = numero("Control (meses)", 1, 60, true);
 for (const p of PARES) for (const o of OJOS) shape[`${p.key}_${o.suf}`] = texto(200);
 for (const o of OJOS) {
   for (const c of RX_CAMPOS) {
@@ -91,6 +101,15 @@ export function buildFichaPayload(d: Record<string, unknown>) {
     observaciones: d.observaciones,
     recomendaciones: d.recomendaciones,
     indicaciones_recepcion: d.indicaciones_recepcion,
+    avh_condicion: d.avh_condicion,
+    avh_od: d.avh_od,
+    avh_oi: d.avh_oi,
+    rx_tipo: d.rx_tipo,
+    cie_od: d.cie_od,
+    cie_oi: d.cie_oi,
+    test_colores: d.test_colores,
+    necesita_lentes: d.necesita_lentes,
+    control_meses: d.control_meses,
   };
   for (const p of PARES) for (const o of OJOS) out[`${p.key}_${o.suf}`] = d[`${p.key}_${o.suf}`];
   out.rx = OJOS.map((o) => ({
@@ -111,7 +130,7 @@ export function buildFichaPayload(d: Record<string, unknown>) {
 // Una ficha sin ningun dato no tiene sentido guardarla.
 export function fichaVacia(payload: Record<string, unknown>): boolean {
   const vacio = (v: unknown) => v == null || v === "" || v === false;
-  const sueltos = Object.entries(payload).filter(([k]) => k !== "rx" && k !== "cl");
+  const sueltos = Object.entries(payload).filter(([k]) => k !== "rx" && k !== "cl" && k !== "rx_tipo");
   const rx = (payload.rx as Record<string, unknown>[]).flatMap((r) => Object.entries(r).filter(([k]) => k !== "ojo"));
   const cl = (payload.cl as Record<string, unknown>[]).flatMap((r) => Object.entries(r).filter(([k]) => k !== "ojo"));
   return [...sueltos, ...rx, ...cl].every(([, v]) => vacio(v));

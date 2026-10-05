@@ -13,7 +13,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
   const links = user.activo ? MODULES.filter((m) => m.href && m.roles.includes(user.rol)) : [];
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-6 py-6">
+    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-6 py-6 print:max-w-none print:p-0">
       <header className="flex flex-wrap items-center justify-between gap-4 print:hidden">
         <Link href="/dashboard" aria-label="Inicio">
           <Image src="/logo.png" alt="Óptica Pérez" width={360} height={249} className="h-auto w-24" />

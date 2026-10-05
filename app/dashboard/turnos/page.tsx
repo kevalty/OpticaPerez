@@ -184,7 +184,7 @@ export default async function TurnosPage({ searchParams }: PageProps<"/dashboard
                     </form>
                   )}
                   {esRecep && (t.estado === "atendido" || t.estado === "finalizado") && (
-                    <Link href={`/dashboard/turnos/${t.id}/receta`} className={btnGhost}>Imprimir receta</Link>
+                    <Link href={`/dashboard/turnos/${t.id}/certificado`} className={btnGhost}>Imprimir certificado</Link>
                   )}
                   {esRecep && t.estado === "atendido" && (
                     <form action={finalizarTurno}>{hidden(t)}<button className={btnPrimary}>Finalizar</button></form>

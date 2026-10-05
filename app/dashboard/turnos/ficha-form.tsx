@@ -122,6 +122,82 @@ export function FichaForm({
         </div>
       </section>
 
+      <section className="flex flex-col gap-4 rounded-xl bg-iris-light/40 p-4">
+        <div>
+          <h4 className="font-semibold text-brand">Datos para el certificado</h4>
+          <p className="text-xs text-brand-dark/70">Lo que se imprime en el certificado que recibe el paciente. Lo que dejes vacío no se imprime.</p>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-3">
+          <label className="flex flex-col gap-1 text-sm font-medium text-brand">
+            A.V. habitual (condición)
+            <input name="avh_condicion" list="avh-opciones" maxLength={60} placeholder="SIN RX AO." className={small} />
+            <datalist id="avh-opciones">
+              <option value="SIN RX AO." />
+              <option value="CON RX AO." />
+              <option value="SIN RX OD." />
+              <option value="SIN RX OI." />
+            </datalist>
+          </label>
+          <label className="flex flex-col gap-1 text-sm font-medium text-brand">
+            A.V. habitual OD
+            <input name="avh_od" maxLength={30} placeholder="20/100" className={small} />
+          </label>
+          <label className="flex flex-col gap-1 text-sm font-medium text-brand">
+            A.V. habitual OI
+            <input name="avh_oi" maxLength={30} placeholder="20/200" className={small} />
+          </label>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-3">
+          <label className="flex flex-col gap-1 text-sm font-medium text-brand">
+            Tipo de Rx
+            <input name="rx_tipo" maxLength={30} defaultValue="FINAL" className={small} />
+          </label>
+          <label className="flex flex-col gap-1 text-sm font-medium text-brand">
+            Código CIE — OD
+            <input name="cie_od" list="cie-opciones" maxLength={60} placeholder="H52.1 / H52.2" className={small} />
+          </label>
+          <label className="flex flex-col gap-1 text-sm font-medium text-brand">
+            Código CIE — OI
+            <input name="cie_oi" list="cie-opciones" maxLength={60} placeholder="H52.1 / H52.2" className={small} />
+          </label>
+          <datalist id="cie-opciones">
+            <option value="H52.0" label="Hipermetropía" />
+            <option value="H52.1" label="Miopía" />
+            <option value="H52.2" label="Astigmatismo" />
+            <option value="H52.3" label="Anisometropía y aniseiconia" />
+            <option value="H52.4" label="Presbicia" />
+            <option value="H52.5" label="Trastornos de la acomodación" />
+            <option value="H52.6" label="Otros trastornos de la refracción" />
+            <option value="H52.7" label="Trastorno de la refracción, no especificado" />
+          </datalist>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-3">
+          <label className="flex flex-col gap-1 text-sm font-medium text-brand">
+            Test de colores
+            <select name="test_colores" defaultValue="" className={small}>
+              <option value="">No se imprime</option>
+              <option value="NORMAL">NORMAL</option>
+              <option value="ANORMAL">ANORMAL</option>
+            </select>
+          </label>
+          <label className="flex flex-col gap-1 text-sm font-medium text-brand">
+            Lentes correctores
+            <select name="necesita_lentes" defaultValue="" className={small}>
+              <option value="">No se imprime</option>
+              <option value="si">Necesita usar lentes correctores</option>
+              <option value="no">No necesita lentes correctores</option>
+            </select>
+          </label>
+          <label className="flex flex-col gap-1 text-sm font-medium text-brand">
+            Control cada (meses)
+            <input name="control_meses" type="number" min={1} max={60} step={1} placeholder="8" className={small} />
+          </label>
+        </div>
+      </section>
+
       <label className="flex flex-col gap-1 text-sm font-medium text-brand">
         Recomendaciones
         <textarea name="recomendaciones" rows={3} maxLength={5000} className={inputCls} />

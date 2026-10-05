@@ -29,9 +29,10 @@ Sistema de gestión integral para Óptica Pérez (optometría y contactología):
 2. El día del turno, recepción marca "Llegó" (`agendado` → `en_espera`). Recepción NO puede pasar al consultorio.
 3. Solo el **doctor** pulsa "En consultorio" (`en_espera` → `en_consulta`): se abre un pop-up con los datos del paciente, la ficha anterior (si existe) y la ficha nueva a llenar. Si es primera vez, ficha en blanco.
 4. Al guardar la ficha (`guardar_ficha`, todo o nada en la BD) el turno pasa a `atendido` y recepción lo ve resaltado ("Pasar por recepción", la agenda se refresca sola).
-5. Recepción imprime la **receta** (solo tabla Rx + indicaciones del doctor, vía `receta_recepcion`; nunca la ficha completa) y pulsa "Finalizar" (`atendido` → `finalizado`).
+5. Recepción imprime el **certificado** (formato de la hoja de Óptica Perez: `components/certificado-doc.tsx`) y pulsa "Finalizar" (`atendido` → `finalizado`). Recibe de la BD solo lo que lleva el certificado (`certificado_recepcion`: AVH, Rx final, DP, CIE, test de colores, necesita lentes, control) + las indicaciones del doctor; nunca la ficha completa. Lo que está vacío no se imprime.
 - Estados y quién puede cambiarlos están forzados en la BD (trigger `guard_appointment`), no solo en la UI.
-- Pendiente de definir con el cliente: formato del **certificado médico** (la receta ya se imprime).
+- Nombre y registro M.S.P. del doctor (`users.nombre`, `users.registro_msp`) y la ciudad/locales del encabezado (`lib/negocio.ts`) salen en el certificado.
+- Pendiente: importar datos de los equipos de optometría conectados (autorrefractómetro, etc.) cuando el cliente entregue un ejemplo de exportación.
 
 ## Modelo de datos
 patients, medical_records, rx_prescriptions, contact_lens_trials, appointments, orders, order_status_history, users, whatsapp_reminders, sales, products, inventory_movements.
@@ -52,7 +53,7 @@ Todas en PostgreSQL/Supabase con llaves foráneas, `created_at`/`updated_at` y s
 |---|---|
 | 1 | Proyecto base Next.js + Supabase, modelo de datos, autenticación y roles iniciales. **Estado: completada y verificada en producción (login con rol administrador).** |
 | 2 | Pacientes y turnos. **Estado: completada; ajustada en la semana 3 (cédula, turnos con fecha/hora, flujo doctor → recepción).** |
-| 3 | Ficha médica digital completa con RLS por rol. **Estado: código listo; falta aplicar `0003_estados.sql` y `0004_ficha_turnos.sql`.** |
+| 3 | Ficha médica digital completa con RLS por rol. **Estado: código listo; falta aplicar `0003`, `0004` y `0005` (ver `supabase/README.md`).** |
 | 4 | Ventas y órdenes de trabajo |
 | 5 | Seguimiento de pedidos e historial |
 | 6 | Recordatorios por WhatsApp |

@@ -1,6 +1,6 @@
 import { PARES, RX_CAMPOS, formatRx, type ClRow, type Ficha, type RxRow } from "@/lib/ficha";
 
-const val = (v: string | number | null | undefined) => (v == null || v === "" ? "—" : String(v));
+const val = (v: string | number | boolean | null | undefined) => (v == null || v === "" ? "—" : String(v));
 
 // Vista de solo lectura de una ficha medica ya guardada.
 export function FichaView({ ficha, rx, cl }: { ficha: Ficha; rx: RxRow[]; cl: ClRow[] }) {
@@ -82,6 +82,28 @@ export function FichaView({ ficha, rx, cl }: { ficha: Ficha; rx: RxRow[]; cl: Cl
                 {r.ojo}: prueba {val(r.prueba)} · A.V. {val(r.av)}
               </li>
             ))}
+          </ul>
+        </section>
+      )}
+
+      {(ficha.avh_od || ficha.avh_oi || ficha.avh_condicion || ficha.cie_od || ficha.cie_oi || ficha.test_colores || ficha.necesita_lentes != null || ficha.control_meses) && (
+        <section>
+          <h4 className="font-semibold text-brand">Datos del certificado</h4>
+          <ul className="text-brand-dark">
+            {(ficha.avh_condicion || ficha.avh_od || ficha.avh_oi) && (
+              <li>
+                A.V. habitual: {val(ficha.avh_condicion)} · OD {val(ficha.avh_od)} · OI {val(ficha.avh_oi)}
+              </li>
+            )}
+            {ficha.rx_tipo && <li>Rx: {ficha.rx_tipo}</li>}
+            {(ficha.cie_od || ficha.cie_oi) && (
+              <li>
+                Código CIE: OD {val(ficha.cie_od)} · OI {val(ficha.cie_oi)}
+              </li>
+            )}
+            {ficha.test_colores && <li>Test de colores: {ficha.test_colores}</li>}
+            {ficha.necesita_lentes != null && <li>{ficha.necesita_lentes ? "Necesita usar lentes correctores" : "No necesita lentes correctores"}</li>}
+            {ficha.control_meses && <li>Control cada {ficha.control_meses} meses</li>}
           </ul>
         </section>
       )}
