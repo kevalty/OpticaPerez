@@ -20,7 +20,23 @@ export default async function CertificadoPage({ params }: PageProps<"/dashboard/
   const { data, error } = await supabase.rpc("certificado_recepcion", { p_turno: id });
   if (error) console.error("certificado fallo:", error.code);
   const c = data as CertificadoDatos | null;
-  if (!c) notFound();
+
+  if (!c) {
+    // PGRST202 = la funcion no existe en la BD (migracion 0005 sin aplicar)
+    const mensaje = error
+      ? error.code === "PGRST202"
+        ? "Falta aplicar la migración 0005_certificado.sql en Supabase. Avisa al administrador."
+        : "No se pudo cargar el certificado. Inténtalo de nuevo."
+      : "Este turno todavía no tiene certificado. Solo se puede imprimir cuando el doctor guardó la ficha y el turno está en “Atendido”.";
+    return (
+      <>
+        <div>
+          <Link href="/dashboard/turnos" className={btnGhost}>← Volver a turnos</Link>
+        </div>
+        <p role="alert" className="max-w-xl rounded-xl bg-amber-50 px-4 py-3 text-sm text-brand">{mensaje}</p>
+      </>
+    );
+  }
 
   return (
     <>
