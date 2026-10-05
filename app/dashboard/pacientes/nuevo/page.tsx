@@ -1,5 +1,6 @@
 import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { todayISO } from "@/lib/time";
 import { createPatient } from "../actions";
 import { PatientForm } from "../patient-form";
 
@@ -9,11 +10,11 @@ export default async function NuevoPacientePage() {
   const user = await requireRole("recepcionista", "doctor", "administrador");
   const puedeDarTurno = user.rol === "recepcionista" || user.rol === "administrador";
 
-  let optometristas: { id: string; nombre: string }[] | undefined;
+  let turno: { hoy: string; optometristas: { id: string; nombre: string }[] } | undefined;
   if (puedeDarTurno) {
     const supabase = await createClient();
     const { data } = await supabase.rpc("list_optometristas");
-    optometristas = (data as { id: string; nombre: string }[] | null) ?? [];
+    turno = { hoy: todayISO(), optometristas: (data as { id: string; nombre: string }[] | null) ?? [] };
   }
 
   return (
@@ -23,7 +24,7 @@ export default async function NuevoPacientePage() {
         action={createPatient}
         submitLabel="Registrar paciente"
         cancelHref="/dashboard/pacientes"
-        optometristas={optometristas}
+        turno={turno}
       />
     </>
   );

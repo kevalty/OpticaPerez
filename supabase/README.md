@@ -9,6 +9,8 @@
 Aplica en orden, una vez cada una, en el SQL Editor:
 - `0001_schema.sql` (Semana 1)
 - `0002_semana2.sql` (Semana 2: directorio de optometristas y candado de archivado)
+- `0003_estados.sql` (Semana 3: nuevos estados de turno; **ejecutar solo, antes de la 0004**)
+- `0004_ficha_turnos.sql` (Semana 3: documento del paciente, reglas del flujo de turnos, ficha medica, receta para recepcion, cancelar turno)
 
 ## Crear el primer administrador
 1. Supabase -> **Authentication -> Users -> Add user** (correo + contrasena, marca *Auto Confirm*).

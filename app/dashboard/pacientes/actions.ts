@@ -1,9 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { msg } from "@/lib/mensajes";
 import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/auth";
-import { insertTurno } from "@/lib/appointments";
+import { insertTurno, leerTurno } from "@/lib/appointments";
 import { createClient } from "@/lib/supabase/server";
 import { optionalUuid, patientSchema, uuid, type FormState } from "@/lib/validation";
 
@@ -13,6 +14,11 @@ export async function createPatient(_prev: FormState, formData: FormData): Promi
   const parsed = patientSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
+  // Solo recepcion/administrador dan turnos. Se valida ANTES de guardar al paciente para no dejar el registro a medias.
+  const quiereTurno = formData.get("dar_turno") === "on" && (user.rol === "recepcionista" || user.rol === "administrador");
+  const turno = quiereTurno ? leerTurno(formData) : null;
+  if (turno && !turno.ok) return { error: turno.error };
+
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("patients")
@@ -21,25 +27,23 @@ export async function createPatient(_prev: FormState, formData: FormData): Promi
     .single();
   if (error || !data) {
     if (error) console.error("createPatient fallo:", error.code);
-    return { error: "No se pudo guardar el paciente. Inténtalo de nuevo." };
-  }
-
-  // Registro en mostrador + turno directo (solo recepcion/administrador pueden dar turnos).
-  if (formData.get("dar_turno") === "on" && (user.rol === "recepcionista" || user.rol === "administrador")) {
-    const ok = await insertTurno(supabase, user.id, data.id, optionalUuid(formData.get("optometrista_id")));
-    if (ok) {
-      revalidatePath("/dashboard/turnos");
-      redirect("/dashboard/turnos");
-    }
+    if (error?.code === "23505") return { error: msg("Ya existe un paciente registrado con ese número de documento.") };
+    return { error: msg("No se pudo guardar el paciente. Inténtalo de nuevo.") };
   }
 
   revalidatePath("/dashboard/pacientes");
+  if (turno?.ok) {
+    const r = await insertTurno(supabase, user.id, data.id, optionalUuid(formData.get("optometrista_id")), turno.turno);
+    revalidatePath("/dashboard/turnos");
+    if (!r.ok) redirect(`/dashboard/pacientes/${data.id}?error=${encodeURIComponent(r.error)}`);
+    redirect(`/dashboard/turnos?fecha=${turno.turno.fecha}`);
+  }
   redirect(`/dashboard/pacientes/${data.id}`);
 }
 
 export async function updatePatient(id: string, _prev: FormState, formData: FormData): Promise<FormState> {
   await requireRole("recepcionista", "doctor", "administrador");
-  if (!uuid.safeParse(id).success) return { error: "Paciente no válido." };
+  if (!uuid.safeParse(id).success) return { error: msg("Paciente no válido.") };
 
   const parsed = patientSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0].message };
@@ -48,7 +52,8 @@ export async function updatePatient(id: string, _prev: FormState, formData: Form
   const { data, error } = await supabase.from("patients").update(parsed.data).eq("id", id).select("id");
   if (error || !data?.length) {
     if (error) console.error("updatePatient fallo:", error.code);
-    return { error: "No se pudo guardar los cambios. Inténtalo de nuevo." };
+    if (error?.code === "23505") return { error: msg("Ya existe otro paciente con ese número de documento.") };
+    return { error: msg("No se pudo guardar los cambios. Inténtalo de nuevo.") };
   }
 
   revalidatePath("/dashboard/pacientes");

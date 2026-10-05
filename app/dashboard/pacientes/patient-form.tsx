@@ -1,27 +1,38 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
+import { TurnoFields } from "@/components/turno-fields";
 import type { FormState } from "@/lib/validation";
 import { btnGhost, btnPrimary, inputCls } from "@/lib/ui";
 
-type Initial = { nombre?: string; direccion?: string | null; telefono?: string | null; edad?: number | null; ocupacion?: string | null };
+type Initial = {
+  nombre?: string;
+  tipo_documento?: string;
+  documento?: string | null;
+  telefono?: string | null;
+  direccion?: string | null;
+  edad?: number | null;
+  ocupacion?: string | null;
+};
 
 export function PatientForm({
   action,
   initial = {},
   submitLabel,
   cancelHref,
-  optometristas,
+  turno,
 }: {
   action: (prev: FormState, formData: FormData) => Promise<FormState>;
   initial?: Initial;
   submitLabel: string;
   cancelHref: string;
-  // Si se pasa (aunque sea vacio), se ofrece dar turno al registrar.
-  optometristas?: { id: string; nombre: string }[];
+  // Si se pasa, se ofrece dar turno al registrar (solo recepcion / administrador).
+  turno?: { hoy: string; optometristas: { id: string; nombre: string }[] };
 }) {
   const [state, formAction, pending] = useActionState(action, {} as FormState);
+  const [tipo, setTipo] = useState(initial.tipo_documento ?? "cedula");
+  const [darTurno, setDarTurno] = useState(true);
 
   return (
     <form action={formAction} className="flex max-w-xl flex-col gap-4">
@@ -29,9 +40,33 @@ export function PatientForm({
         Nombre completo *
         <input name="nombre" required maxLength={200} defaultValue={initial.nombre ?? ""} className={inputCls} />
       </label>
+
+      <div className="grid gap-4 sm:grid-cols-[10rem_1fr]">
+        <label className="flex flex-col gap-1 text-sm font-medium text-brand">
+          Documento *
+          <select name="tipo_documento" value={tipo} onChange={(e) => setTipo(e.target.value)} className={inputCls}>
+            <option value="cedula">Cédula</option>
+            <option value="pasaporte">Pasaporte</option>
+          </select>
+        </label>
+        <label className="flex flex-col gap-1 text-sm font-medium text-brand">
+          {tipo === "cedula" ? "Número de cédula *" : "Número de pasaporte *"}
+          <input
+            name="documento"
+            required
+            maxLength={20}
+            inputMode={tipo === "cedula" ? "numeric" : "text"}
+            pattern={tipo === "cedula" ? "[0-9]{10}" : "[A-Za-z0-9]{5,20}"}
+            title={tipo === "cedula" ? "10 dígitos" : "5 a 20 letras o números"}
+            defaultValue={initial.documento ?? ""}
+            className={inputCls}
+          />
+        </label>
+      </div>
+
       <label className="flex flex-col gap-1 text-sm font-medium text-brand">
-        Teléfono
-        <input name="telefono" type="tel" maxLength={30} defaultValue={initial.telefono ?? ""} className={inputCls} />
+        Celular *
+        <input name="telefono" type="tel" required maxLength={30} defaultValue={initial.telefono ?? ""} className={inputCls} />
       </label>
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="flex flex-col gap-1 text-sm font-medium text-brand">
@@ -48,23 +83,19 @@ export function PatientForm({
         <input name="direccion" maxLength={300} defaultValue={initial.direccion ?? ""} className={inputCls} />
       </label>
 
-      {optometristas && (
+      {turno && (
         <fieldset className="flex flex-col gap-3 rounded-xl bg-iris-light/60 p-4">
           <label className="flex items-center gap-2 text-sm font-medium text-brand">
-            <input type="checkbox" name="dar_turno" defaultChecked className="size-4 accent-[#262d7a]" />
-            Dar turno ahora (pasa a la lista de espera de hoy)
+            <input
+              type="checkbox"
+              name="dar_turno"
+              checked={darTurno}
+              onChange={(e) => setDarTurno(e.target.checked)}
+              className="size-4 accent-[#262d7a]"
+            />
+            Dar turno al registrar
           </label>
-          <label className="flex flex-col gap-1 text-sm text-brand">
-            Optometrista
-            <select name="optometrista_id" defaultValue="" className={inputCls}>
-              <option value="">Cualquiera disponible</option>
-              {optometristas.map((o) => (
-                <option key={o.id} value={o.id}>
-                  {o.nombre}
-                </option>
-              ))}
-            </select>
-          </label>
+          {darTurno && <TurnoFields hoy={turno.hoy} optometristas={turno.optometristas} />}
         </fieldset>
       )}
 

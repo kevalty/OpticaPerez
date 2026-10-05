@@ -14,7 +14,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-6 py-6">
-      <header className="flex flex-wrap items-center justify-between gap-4">
+      <header className="flex flex-wrap items-center justify-between gap-4 print:hidden">
         <Link href="/dashboard" aria-label="Inicio">
           <Image src="/logo.png" alt="Óptica Pérez" width={360} height={249} className="h-auto w-24" />
         </Link>
@@ -30,7 +30,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
       </header>
 
       {links.length > 0 && (
-        <nav className="flex flex-wrap gap-2 border-b border-brand/10 pb-3">
+        <nav className="flex flex-wrap gap-2 border-b border-brand/10 pb-3 print:hidden">
           <Link href="/dashboard" className="rounded-full px-3 py-1 text-sm text-brand hover:bg-iris-light">
             Inicio
           </Link>

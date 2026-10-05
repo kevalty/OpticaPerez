@@ -15,14 +15,14 @@ export default async function PacientesPage({ searchParams }: PageProps<"/dashbo
   const supabase = await createClient();
   let query = supabase
     .from("patients")
-    .select("id, nombre, telefono, edad, fecha_registro")
+    .select("id, nombre, documento, telefono, edad, fecha_registro")
     .is("deleted_at", null)
     .order("nombre", { ascending: true })
     .limit(LIMITE);
-  if (q) query = query.or(`nombre.ilike.%${q}%,telefono.ilike.%${q}%`);
+  if (q) query = query.or(`nombre.ilike.%${q}%,telefono.ilike.%${q}%,documento.ilike.%${q}%`);
 
   const { data, error } = await query;
-  const pacientes = (data ?? []) as { id: string; nombre: string; telefono: string | null; edad: number | null; fecha_registro: string }[];
+  const pacientes = (data ?? []) as { id: string; nombre: string; documento: string | null; telefono: string | null; edad: number | null; fecha_registro: string }[];
 
   return (
     <>
@@ -34,7 +34,7 @@ export default async function PacientesPage({ searchParams }: PageProps<"/dashbo
       </div>
 
       <form className="flex gap-2" action="/dashboard/pacientes">
-        <input name="q" defaultValue={q} placeholder="Buscar por nombre o teléfono" maxLength={60} className={inputCls} />
+        <input name="q" defaultValue={q} placeholder="Buscar por nombre, cédula o celular" maxLength={60} className={inputCls} />
         <button className={btnGhost}>Buscar</button>
       </form>
 
@@ -48,7 +48,7 @@ export default async function PacientesPage({ searchParams }: PageProps<"/dashbo
             <Link key={p.id} href={`/dashboard/pacientes/${p.id}`} className="flex items-center justify-between gap-4 px-5 py-3 hover:bg-iris-light/50">
               <span className="font-medium text-brand">{p.nombre}</span>
               <span className="text-sm text-brand-dark/60">
-                {[p.edad != null ? `${p.edad} años` : null, p.telefono].filter(Boolean).join(" · ")}
+                {[p.documento, p.telefono, p.edad != null ? `${p.edad} años` : null].filter(Boolean).join(" · ")}
               </span>
             </Link>
           ))
