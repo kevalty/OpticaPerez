@@ -34,14 +34,15 @@ Todas en PostgreSQL/Supabase con llaves foráneas, `created_at`/`updated_at` y s
 - Datos clínicos sensibles: HTTPS obligatorio; nunca en logs, errores ni URLs; bitácora de auditoría de quién vio/editó cada ficha.
 - Validación de inputs en servidor, consultas parametrizadas (nunca concatenar SQL), sanitizar texto libre (XSS), CORS restrictivo.
 - Next.js 16: el archivo de interceptación se llama `proxy.ts` (no `middleware.ts`) y `cookies()` es asíncrono. Leer `node_modules/next/dist/docs/` antes de usar APIs nuevas.
+- Zona horaria del negocio: `America/Guayaquil` (variable `APP_TIMEZONE`). "Hoy" se calcula con `lib/time.ts`, nunca con la fecha UTC del servidor.
 - Secretos solo en variables de entorno (ver `.env.example`), nunca en el repo.
 - Backups diarios confirmados y plan de recuperación documentado.
 
 ## Plan de fases
 | Semana | Entregable |
 |---|---|
-| 1 | Proyecto base Next.js + Supabase, modelo de datos, autenticación y roles iniciales. **Estado: código listo; falta aplicar `supabase/migrations/0001_schema.sql` y configurar variables en Vercel.** |
-| 2 | Pacientes y turnos |
+| 1 | Proyecto base Next.js + Supabase, modelo de datos, autenticación y roles iniciales. **Estado: completada y verificada en producción (login con rol administrador).** |
+| 2 | Pacientes y turnos. **Estado: código listo; falta aplicar `supabase/migrations/0002_semana2.sql`.** |
 | 3 | Ficha médica digital completa con RLS por rol |
 | 4 | Ventas y órdenes de trabajo |
 | 5 | Seguimiento de pedidos e historial |

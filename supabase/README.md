@@ -5,6 +5,11 @@
 2. Pega todo `migrations/0001_schema.sql` y pulsa **Run**.
 3. Debe terminar sin errores. Crea tablas, roles, politicas RLS y auditoria.
 
+## Migraciones posteriores
+Aplica en orden, una vez cada una, en el SQL Editor:
+- `0001_schema.sql` (Semana 1)
+- `0002_semana2.sql` (Semana 2: directorio de optometristas y candado de archivado)
+
 ## Crear el primer administrador
 1. Supabase -> **Authentication -> Users -> Add user** (correo + contrasena, marca *Auto Confirm*).
 2. En el SQL Editor ejecuta (cambia el correo):
