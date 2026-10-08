@@ -10,6 +10,8 @@ import { darTurno } from "../actions";
 
 export const metadata = { title: "Dar turno · Óptica Pérez" };
 
+const LIMITE = 50;
+
 type Paciente = { id: string; nombre: string; documento: string | null; telefono: string | null };
 
 export default async function NuevoTurnoPage({ searchParams }: PageProps<"/dashboard/turnos/nuevo">) {
@@ -23,17 +25,15 @@ export default async function NuevoTurnoPage({ searchParams }: PageProps<"/dashb
   const { data: opts } = await supabase.rpc("list_optometristas");
   const optometristas = (opts ?? []) as { id: string; nombre: string }[];
 
-  let pacientes: Paciente[] = [];
-  if (q) {
-    const { data } = await supabase
-      .from("patients")
-      .select("id, nombre, documento, telefono")
-      .is("deleted_at", null)
-      .or(`nombre.ilike.%${q}%,telefono.ilike.%${q}%,documento.ilike.%${q}%`)
-      .order("nombre")
-      .limit(10);
-    pacientes = (data ?? []) as Paciente[];
-  }
+  let lista = supabase
+    .from("patients")
+    .select("id, nombre, documento, telefono")
+    .is("deleted_at", null)
+    .order("nombre")
+    .limit(LIMITE);
+  if (q) lista = lista.or(`nombre.ilike.%${q}%,telefono.ilike.%${q}%,documento.ilike.%${q}%`);
+  const { data: listaData } = await lista;
+  const pacientes = (listaData ?? []) as Paciente[];
 
   let paciente: Paciente | null = null;
   if (elegido) {
@@ -60,24 +60,23 @@ export default async function NuevoTurnoPage({ searchParams }: PageProps<"/dashb
         <button className={btnGhost}>Buscar</button>
       </form>
 
-      {q && (
-        <section className={`${card} divide-y divide-brand/10 p-0`}>
-          {pacientes.length === 0 ? (
-            <p className="p-5 text-sm text-brand-dark/70">No se encontró ningún paciente.</p>
-          ) : (
-            pacientes.map((p) => (
-              <Link
-                key={p.id}
-                href={`/dashboard/turnos/nuevo?q=${encodeURIComponent(q)}&paciente=${p.id}`}
-                className={`flex items-center justify-between gap-3 px-5 py-3 hover:bg-iris-light/50 ${p.id === paciente?.id ? "bg-iris-light/60" : ""}`}
-              >
-                <span className="font-medium text-brand">{p.nombre}</span>
-                <span className="text-xs text-brand-dark/60">{[p.documento, p.telefono].filter(Boolean).join(" · ")}</span>
-              </Link>
-            ))
-          )}
-        </section>
-      )}
+      <section className={`${card} divide-y divide-brand/10 p-0`}>
+        {pacientes.length === 0 ? (
+          <p className="p-5 text-sm text-brand-dark/70">{q ? "No se encontró ningún paciente." : "Aún no hay pacientes registrados."}</p>
+        ) : (
+          pacientes.map((p) => (
+            <Link
+              key={p.id}
+              href={`/dashboard/turnos/nuevo?${q ? `q=${encodeURIComponent(q)}&` : ""}paciente=${p.id}`}
+              className={`flex items-center justify-between gap-3 px-5 py-3 hover:bg-iris-light/50 ${p.id === paciente?.id ? "bg-iris-light/60" : ""}`}
+            >
+              <span className="font-medium text-brand">{p.nombre}</span>
+              <span className="text-xs text-brand-dark/60">{[p.documento, p.telefono].filter(Boolean).join(" · ")}</span>
+            </Link>
+          ))
+        )}
+      </section>
+      {pacientes.length === LIMITE && <p className="text-xs text-brand-dark/60">Se muestran los primeros {LIMITE}. Busca por nombre, cédula o celular para ver otros.</p>}
 
       {paciente && (
         <form action={darTurno} className={`${card} flex max-w-xl flex-col gap-4`}>
