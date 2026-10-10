@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/auth";
 import { insertTurno, leerTurno } from "@/lib/appointments";
 import { buildFichaPayload, fichaSchema, fichaVacia } from "@/lib/ficha";
+import { leerRecetario } from "@/lib/recetario";
 import { createClient } from "@/lib/supabase/server";
 import { isISODate, todayISO } from "@/lib/time";
 import { optionalUuid, uuid, type FormState } from "@/lib/validation";
@@ -145,7 +146,10 @@ export async function guardarFicha(turnoId: string, fecha: string, _prev: FormSt
   const parsed = fichaSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
-  const payload = buildFichaPayload(parsed.data);
+  const rec = leerRecetario(formData);
+  if (!rec.ok) return { error: msg(rec.error) };
+
+  const payload = { ...buildFichaPayload(parsed.data), recetario: rec.value };
   if (fichaVacia(payload)) return { error: msg("La ficha está vacía. Anota al menos un dato antes de guardar.") };
 
   const supabase = await createClient();

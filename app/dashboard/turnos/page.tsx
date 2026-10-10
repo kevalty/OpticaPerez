@@ -80,7 +80,7 @@ export default async function TurnosPage({ searchParams }: PageProps<"/dashboard
     if (esMio) {
       const { data: p } = await supabase
         .from("patients")
-        .select("id, nombre, tipo_documento, documento, telefono, edad, ocupacion, direccion")
+        .select("id, nombre, tipo_documento, documento, telefono, email, edad, ocupacion, direccion")
         .eq("id", turno.patient_id)
         .maybeSingle();
       if (p) {
@@ -184,7 +184,10 @@ export default async function TurnosPage({ searchParams }: PageProps<"/dashboard
                     </form>
                   )}
                   {esRecep && (t.estado === "atendido" || t.estado === "finalizado") && (
-                    <Link href={`/dashboard/turnos/${t.id}/certificado`} className={btnGhost}>Imprimir certificado</Link>
+                    <>
+                      <Link href={`/dashboard/turnos/${t.id}/certificado`} className={btnGhost}>Imprimir certificado</Link>
+                      <Link href={`/dashboard/turnos/${t.id}/recetario`} className={btnGhost}>Imprimir recetario</Link>
+                    </>
                   )}
                   {esRecep && t.estado === "atendido" && (
                     <form action={finalizarTurno}>{hidden(t)}<button className={btnPrimary}>Finalizar</button></form>

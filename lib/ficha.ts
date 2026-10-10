@@ -130,7 +130,8 @@ export function buildFichaPayload(d: Record<string, unknown>) {
 // Una ficha sin ningun dato no tiene sentido guardarla.
 export function fichaVacia(payload: Record<string, unknown>): boolean {
   const vacio = (v: unknown) => v == null || v === "" || v === false;
-  const sueltos = Object.entries(payload).filter(([k]) => k !== "rx" && k !== "cl" && k !== "rx_tipo");
+  if (payload.recetario) return false;
+  const sueltos = Object.entries(payload).filter(([k]) => k !== "rx" && k !== "cl" && k !== "rx_tipo" && k !== "recetario");
   const rx = (payload.rx as Record<string, unknown>[]).flatMap((r) => Object.entries(r).filter(([k]) => k !== "ojo"));
   const cl = (payload.cl as Record<string, unknown>[]).flatMap((r) => Object.entries(r).filter(([k]) => k !== "ojo"));
   return [...sueltos, ...rx, ...cl].every(([, v]) => vacio(v));
