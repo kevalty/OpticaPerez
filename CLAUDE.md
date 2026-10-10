@@ -53,7 +53,7 @@ Todas en PostgreSQL/Supabase con llaves foráneas, `created_at`/`updated_at` y s
 |---|---|
 | 1 | Proyecto base Next.js + Supabase, modelo de datos, autenticación y roles iniciales. **Estado: completada y verificada en producción (login con rol administrador).** |
 | 2 | Pacientes y turnos. **Estado: completada; ajustada en la semana 3 (cédula, turnos con fecha/hora, flujo doctor → recepción).** |
-| 3 | Ficha médica digital completa con RLS por rol. **Estado: código listo; falta aplicar `0003`, `0004` y `0005` (ver `supabase/README.md`).** |
+| 3 | Ficha médica digital completa con RLS por rol. **Estado: código listo; falta aplicar `0003` a `0006` (ver `supabase/README.md`).** Incluye recetario de lentes (formato Essilor) dentro de la ficha, correo del paciente (obligatorio, puede repetirse), cédula sin dígito verificador obligatorio, inicio con iconos estilo app y atajos de teclado (`components/atajos.tsx`, `components/modal-shell.tsx`). |
 | 4 | Ventas y órdenes de trabajo |
 | 5 | Seguimiento de pedidos e historial |
 | 6 | Recordatorios por WhatsApp |

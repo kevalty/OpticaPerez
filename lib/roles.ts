@@ -11,7 +11,6 @@ export const ROLE_LABEL: Record<Role, string> = {
 export const MODULES: { id: string; titulo: string; detalle: string; roles: Role[]; semana: number; href?: string }[] = [
   { id: "pacientes", titulo: "Pacientes", detalle: "Registro y perfil de pacientes", roles: ["recepcionista", "doctor", "administrador"], semana: 2, href: "/dashboard/pacientes" },
   { id: "turnos", titulo: "Turnos", detalle: "Agenda y paso al consultorio", roles: ["recepcionista", "doctor", "administrador"], semana: 2, href: "/dashboard/turnos" },
-  { id: "fichas", titulo: "Fichas médicas", detalle: "Historia clínica digital", roles: ["doctor", "administrador"], semana: 3 },
   { id: "ventas", titulo: "Ventas", detalle: "Ventas y órdenes de trabajo", roles: ["recepcionista", "otro", "administrador"], semana: 4 },
   { id: "pedidos", titulo: "Pedidos", detalle: "Seguimiento de lentes", roles: ["recepcionista", "doctor", "administrador", "otro"], semana: 5 },
   { id: "inventario", titulo: "Inventario", detalle: "Productos y stock", roles: ["recepcionista", "administrador", "otro"], semana: 7 },

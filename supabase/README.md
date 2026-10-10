@@ -13,6 +13,7 @@ Aplica en orden, una vez cada una, en el SQL Editor:
 - `0004_ficha_turnos.sql` (Semana 3: documento del paciente, reglas del flujo de turnos, ficha medica, receta para recepcion, cancelar turno)
 
 - `0005_certificado.sql` (certificado: campos nuevos de la ficha y registro M.S.P. del doctor; reemplaza `receta_recepcion` por `certificado_recepcion`)
+- `0006_correo_recetario.sql` (correo del paciente, recetario de lentes dentro de la ficha; actualiza `guardar_ficha` y `certificado_recepcion`). **Aplicarla ANTES de publicar la version nueva de la app.**
 
 ## Datos del doctor que salen en el certificado
 El nombre y el registro del Ministerio de Salud Publica se imprimen bajo la firma. Hasta que exista la

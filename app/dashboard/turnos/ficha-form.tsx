@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { OJOS, PARES, RX_CAMPOS } from "@/lib/ficha";
 import { btnPrimary, inputCls } from "@/lib/ui";
+import { RecetarioFields } from "./recetario-fields";
 import type { FormState } from "@/lib/validation";
 
 const small = `${inputCls} !px-2 !py-1.5 !text-sm`;
@@ -122,6 +123,16 @@ export function FichaForm({
         </div>
       </section>
 
+      <section className="flex flex-col gap-3">
+        <div>
+          <h4 className="font-semibold text-brand">Recetario de lentes</h4>
+          <p className="text-xs text-brand-dark/70">
+            La hoja que se envía al laboratorio (formato Essilor). Es opcional: si el paciente no necesita lentes, déjala vacía.
+          </p>
+        </div>
+        <RecetarioFields />
+      </section>
+
       <section className="flex flex-col gap-4 rounded-xl bg-iris-light/40 p-4">
         <div>
           <h4 className="font-semibold text-brand">Datos para el certificado</h4>
@@ -221,7 +232,9 @@ export function FichaForm({
         <button type="submit" disabled={pending} className={btnPrimary}>
           {pending ? "Guardando…" : "Guardar ficha y terminar consulta"}
         </button>
-        <p className="text-xs text-brand-dark/60">Al guardar, el turno pasa a “Atendido” y recepción lo ve de inmediato.</p>
+        <p className="text-xs text-brand-dark/60">
+          Al guardar, el turno pasa a “Atendido” y recepción lo ve de inmediato. Atajo: <kbd className="rounded bg-iris-light px-1">Ctrl</kbd>+<kbd className="rounded bg-iris-light px-1">Enter</kbd>
+        </p>
       </div>
     </form>
   );
