@@ -1,50 +1,38 @@
 import Link from "next/link";
+import { BuscadorPacientes } from "@/components/buscador-pacientes";
 import { TurnoFields } from "@/components/turno-fields";
 import { requireRole } from "@/lib/auth";
 import { mensajeSeguro } from "@/lib/mensajes";
+import { LIMITE_PACIENTES, type PacienteFila } from "@/lib/pacientes";
 import { createClient } from "@/lib/supabase/server";
 import { todayISO } from "@/lib/time";
-import { btnGhost, btnPrimary, card, inputCls } from "@/lib/ui";
-import { cleanSearch, uuid } from "@/lib/validation";
+import { btnPrimary, card } from "@/lib/ui";
+import { uuid } from "@/lib/validation";
 import { darTurno } from "../actions";
 
 export const metadata = { title: "Dar turno · Óptica Pérez" };
 
-const LIMITE = 50;
-
-type Paciente = { id: string; nombre: string; documento: string | null; telefono: string | null };
-
 export default async function NuevoTurnoPage({ searchParams }: PageProps<"/dashboard/turnos/nuevo">) {
   await requireRole("recepcionista", "administrador");
   const sp = await searchParams;
-  const q = cleanSearch(sp.q);
   const elegido = typeof sp.paciente === "string" && uuid.safeParse(sp.paciente).success ? sp.paciente : null;
   const error = mensajeSeguro(sp.error);
 
   const supabase = await createClient();
-  const { data: opts } = await supabase.rpc("list_optometristas");
-  const optometristas = (opts ?? []) as { id: string; nombre: string }[];
-
-  let lista = supabase
-    .from("patients")
-    .select("id, nombre, documento, telefono")
-    .is("deleted_at", null)
-    .order("nombre")
-    .limit(LIMITE);
-  if (q) lista = lista.or(`nombre.ilike.%${q}%,telefono.ilike.%${q}%,documento.ilike.%${q}%`);
-  const { data: listaData } = await lista;
-  const pacientes = (listaData ?? []) as Paciente[];
-
-  let paciente: Paciente | null = null;
-  if (elegido) {
-    const { data } = await supabase
+  const [{ data: opts }, { data: lista }, { data: elegidoData }] = await Promise.all([
+    supabase.rpc("list_optometristas"),
+    supabase
       .from("patients")
-      .select("id, nombre, documento, telefono")
-      .eq("id", elegido)
+      .select("id, nombre, documento, telefono, edad")
       .is("deleted_at", null)
-      .maybeSingle();
-    paciente = (data as Paciente | null) ?? null;
-  }
+      .order("nombre")
+      .limit(LIMITE_PACIENTES),
+    elegido
+      ? supabase.from("patients").select("id, nombre").eq("id", elegido).is("deleted_at", null).maybeSingle()
+      : Promise.resolve({ data: null }),
+  ]);
+  const optometristas = (opts ?? []) as { id: string; nombre: string }[];
+  const paciente = elegidoData as { id: string; nombre: string } | null;
 
   return (
     <>
@@ -55,28 +43,12 @@ export default async function NuevoTurnoPage({ searchParams }: PageProps<"/dashb
 
       {error && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
 
-      <form action="/dashboard/turnos/nuevo" className="flex gap-2">
-        <input name="q" defaultValue={q} placeholder="Buscar paciente por nombre, cédula o celular" maxLength={60} autoFocus={!paciente} className={inputCls} />
-        <button className={btnGhost}>Buscar</button>
-      </form>
-
-      <section data-lista className={`${card} divide-y divide-brand/10 p-0`}>
-        {pacientes.length === 0 ? (
-          <p className="p-5 text-sm text-brand-dark/70">{q ? "No se encontró ningún paciente." : "Aún no hay pacientes registrados."}</p>
-        ) : (
-          pacientes.map((p) => (
-            <Link
-              key={p.id}
-              href={`/dashboard/turnos/nuevo?${q ? `q=${encodeURIComponent(q)}&` : ""}paciente=${p.id}`}
-              className={`flex items-center justify-between gap-3 px-5 py-3 outline-none hover:bg-iris-light/50 focus-visible:bg-iris-light ${p.id === paciente?.id ? "bg-iris-light/60" : ""}`}
-            >
-              <span className="font-medium text-brand">{p.nombre}</span>
-              <span className="text-xs text-brand-dark/60">{[p.documento, p.telefono].filter(Boolean).join(" · ")}</span>
-            </Link>
-          ))
-        )}
-      </section>
-      {pacientes.length === LIMITE && <p className="text-xs text-brand-dark/60">Se muestran los primeros {LIMITE}. Busca por nombre, cédula o celular para ver otros.</p>}
+      <BuscadorPacientes
+        inicial={(lista ?? []) as PacienteFila[]}
+        hrefBase="/dashboard/turnos/nuevo?paciente="
+        seleccionadoId={paciente?.id}
+        autoFocus={!paciente}
+      />
 
       {paciente && (
         <form action={darTurno} className={`${card} flex max-w-xl flex-col gap-4`}>

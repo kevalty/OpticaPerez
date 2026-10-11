@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { TurnoFields } from "@/components/turno-fields";
 import type { FormState } from "@/lib/validation";
 import { btnGhost, btnPrimary, inputCls } from "@/lib/ui";
@@ -32,6 +32,12 @@ export function PatientForm({
   turno?: { hoy: string; optometristas: { id: string; nombre: string }[] };
 }) {
   const [state, formAction, pending] = useActionState(action, {} as FormState);
+  const errorRef = useRef<HTMLParagraphElement>(null);
+  // Tras un error el formulario conserva lo escrito (state.values) y el aviso se lleva a la vista.
+  const v = (campo: string, inicial: string | number | null | undefined) => state.values?.[campo] ?? String(inicial ?? "");
+  useEffect(() => {
+    if (state.error) errorRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+  }, [state]);
   const [tipo, setTipo] = useState(initial.tipo_documento ?? "cedula");
   const [darTurno, setDarTurno] = useState(true);
 
@@ -39,7 +45,7 @@ export function PatientForm({
     <form action={formAction} className="flex max-w-xl flex-col gap-4">
       <label className="flex flex-col gap-1 text-sm font-medium text-brand">
         Nombre completo *
-        <input name="nombre" required maxLength={200} defaultValue={initial.nombre ?? ""} className={inputCls} />
+        <input name="nombre" required maxLength={200} defaultValue={v("nombre", initial.nombre)} className={inputCls} />
       </label>
 
       <div className="grid gap-4 sm:grid-cols-[10rem_1fr]">
@@ -60,7 +66,7 @@ export function PatientForm({
             autoComplete="off"
             pattern={tipo === "cedula" ? "[0-9]{10}" : "[A-Za-z0-9]{5,20}"}
             title={tipo === "cedula" ? "10 dígitos, incluido el 0 del inicio" : "5 a 20 letras o números"}
-            defaultValue={initial.documento ?? ""}
+            defaultValue={v("documento", initial.documento)}
             className={inputCls}
           />
         </label>
@@ -68,37 +74,37 @@ export function PatientForm({
 
       <label className="flex flex-col gap-1 text-sm font-medium text-brand">
         Celular *
-        <input name="telefono" type="tel" required maxLength={30} defaultValue={initial.telefono ?? ""} className={inputCls} />
+        <input name="telefono" type="tel" required maxLength={30} defaultValue={v("telefono", initial.telefono)} className={inputCls} />
       </label>
       <label className="flex flex-col gap-1 text-sm font-medium text-brand">
         Correo electrónico *
-        <input name="email" type="email" required maxLength={120} autoComplete="off" defaultValue={initial.email ?? ""} placeholder="nombre@correo.com" className={inputCls} />
+        <input name="email" type="email" required maxLength={120} autoComplete="off" defaultValue={v("email", initial.email)} placeholder="nombre@correo.com" className={inputCls} />
         <span className="text-xs font-normal text-brand-dark/60">Se puede repetir entre pacientes (por ejemplo, una familia con el mismo correo).</span>
       </label>
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="flex flex-col gap-1 text-sm font-medium text-brand">
           Edad
-          <input name="edad" type="number" min={0} max={130} defaultValue={initial.edad ?? ""} className={inputCls} />
+          <input name="edad" type="number" min={0} max={130} defaultValue={v("edad", initial.edad)} className={inputCls} />
         </label>
         <label className="flex flex-col gap-1 text-sm font-medium text-brand">
           Ocupación
-          <input name="ocupacion" maxLength={120} defaultValue={initial.ocupacion ?? ""} className={inputCls} />
+          <input name="ocupacion" maxLength={120} defaultValue={v("ocupacion", initial.ocupacion)} className={inputCls} />
         </label>
       </div>
       <label className="flex flex-col gap-1 text-sm font-medium text-brand">
         Dirección
-        <input name="direccion" maxLength={300} defaultValue={initial.direccion ?? ""} className={inputCls} />
+        <input name="direccion" maxLength={300} defaultValue={v("direccion", initial.direccion)} className={inputCls} />
       </label>
 
       {turno && (
         <fieldset className="flex flex-col gap-3 rounded-xl bg-iris-light/60 p-4">
-          <label className="flex items-center gap-2 text-sm font-medium text-brand">
+          <label className="flex min-h-11 items-center gap-2 text-sm font-medium text-brand">
             <input
               type="checkbox"
               name="dar_turno"
               checked={darTurno}
               onChange={(e) => setDarTurno(e.target.checked)}
-              className="size-4 accent-[#262d7a]"
+              className="size-5 accent-[#262d7a]"
             />
             Dar turno al registrar
           </label>
@@ -107,7 +113,7 @@ export function PatientForm({
       )}
 
       {state.error && (
-        <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p ref={errorRef} role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
           {state.error}
         </p>
       )}

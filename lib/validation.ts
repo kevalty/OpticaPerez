@@ -76,4 +76,11 @@ export function optionalUuid(value: FormDataEntryValue | null): string | null {
   return typeof value === "string" && uuid.safeParse(value).success ? value : null;
 }
 
-export type FormState = { error?: string };
+export type FormState = { error?: string; values?: Record<string, string> };
+
+// Lo escrito en un formulario, para devolverlo tras un error y no obligar a escribir todo otra vez.
+export function valores(formData: FormData): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [k, v] of formData.entries()) if (typeof v === "string" && !k.startsWith("$ACTION")) out[k] = v;
+  return out;
+}
