@@ -30,4 +30,9 @@ body {
   body {
     background: #ffffff !important;
   }
+  /* Imprimir tambien los colores de fondo (barras azules de titulo, etc.) */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
 }

@@ -124,7 +124,7 @@ export default async function TurnosPage({ searchParams }: PageProps<"/dashboard
         <p className="min-w-56 text-center font-medium first-letter:uppercase text-brand">{formatDateLong(fecha)}</p>
         <Link href={`/dashboard/turnos?fecha=${shiftDate(fecha, 1)}`} className={btnGhost} aria-label="Día siguiente">→</Link>
         <form action="/dashboard/turnos" className="flex items-center gap-2">
-          <input type="date" name="fecha" defaultValue={fecha} aria-label="Ir a una fecha" className="rounded-lg border border-brand/20 bg-white px-2 py-1.5 text-sm text-brand-dark" />
+          <input type="date" name="fecha" defaultValue={fecha} aria-label="Ir a una fecha" className="min-h-11 rounded-lg border border-brand/20 bg-white px-2 py-1.5 text-sm text-brand-dark" />
           <button className={btnGhost}>Ir</button>
         </form>
         {fecha !== hoy && <Link href="/dashboard/turnos" className={btnGhost}>Hoy</Link>}
@@ -180,7 +180,7 @@ export default async function TurnosPage({ searchParams }: PageProps<"/dashboard
                   {esRecep && (t.estado === "agendado" || t.estado === "en_espera") && (
                     <form action={cancelarTurno}>
                       {hidden(t)}
-                      <ConfirmButton message="¿Cancelar este turno?" className="rounded-lg px-2 py-1.5 text-sm text-red-700 hover:bg-red-50">Cancelar</ConfirmButton>
+                      <ConfirmButton message="¿Cancelar este turno?" className="inline-flex min-h-11 items-center rounded-lg px-3 py-1.5 text-sm text-red-700 hover:bg-red-50">Cancelar</ConfirmButton>
                     </form>
                   )}
                   {esRecep && (t.estado === "atendido" || t.estado === "finalizado") && (

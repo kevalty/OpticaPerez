@@ -13,8 +13,11 @@ import {
 // "2026-09-19" -> "19/09/2026" (D/M/A como en la hoja)
 const dmy = (iso: string) => iso.split("-").reverse().join("/");
 
+// Circulo lleno / vacio como texto: no depende de que el navegador imprima colores de fondo.
 const caja = (marcado: boolean) => (
-  <span aria-hidden className={`mr-1 inline-block size-3 shrink-0 rounded-full border border-brand align-[-1px] ${marcado ? "bg-brand" : ""}`} />
+  <span aria-hidden className="mr-1 inline-block w-3 shrink-0 text-center font-bold text-brand">
+    {marcado ? "●" : "○"}
+  </span>
 );
 
 function Opciones({ titulo, opciones, activos, otro, detalle }: { titulo: string; opciones: { id: string; label: string }[]; activos: string[]; otro?: boolean; detalle?: string | null }) {

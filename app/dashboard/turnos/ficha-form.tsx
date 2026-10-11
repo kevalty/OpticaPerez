@@ -6,7 +6,7 @@ import { btnPrimary, inputCls } from "@/lib/ui";
 import { RecetarioFields } from "./recetario-fields";
 import type { FormState } from "@/lib/validation";
 
-const small = `${inputCls} !px-2 !py-1.5 !text-sm`;
+const small = `${inputCls} !min-h-0 !px-2 !py-1.5 !text-sm`;
 
 // Formulario de la ficha medica de la consulta actual (equivale a la ficha en papel de Optica Perez).
 export function FichaForm({
