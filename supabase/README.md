@@ -14,6 +14,7 @@ Aplica en orden, una vez cada una, en el SQL Editor:
 
 - `0005_certificado.sql` (certificado: campos nuevos de la ficha y registro M.S.P. del doctor; reemplaza `receta_recepcion` por `certificado_recepcion`)
 - `0006_correo_recetario.sql` (correo del paciente, recetario de lentes dentro de la ficha; actualiza `guardar_ficha` y `certificado_recepcion`). **Aplicarla ANTES de publicar la version nueva de la app.**
+- `0007_seguridad.sql` (bloqueo progresivo de logins, bitacora `log_access` restringida).
 
 ## Datos del doctor que salen en el certificado
 El nombre y el registro del Ministerio de Salud Publica se imprimen bajo la firma. Hasta que exista la
@@ -43,3 +44,11 @@ Todo usuario nuevo nace **inactivo** y con rol `otro`: un administrador debe act
 - RLS activo en todas las tablas; sin politica = sin acceso.
 - Nunca borrar pacientes ni fichas: usar `deleted_at` (soft delete).
 - `audit_log`, `order_status_history` e `inventory_movements` son solo-anadir.
+
+## Checklist de seguridad en Supabase (se hace en el panel, no en SQL)
+- Authentication -> Sign In / Providers: **desactivar "Allow new users to sign up"**.
+- Authentication -> Policies: longitud minima de contrasena 10+ y exigir mayuscula, numero y simbolo; activar "Leaked password protection" si el plan lo permite.
+- Authentication -> Rate Limits: dejar los limites por defecto o mas estrictos. JWT expiry: 3600 s o menos.
+- Database -> Backups: confirmar backups diarios (en plan gratuito no hay: exportar con `pg_dump` o subir de plan).
+- Project Settings -> API: **nunca** usar la `service_role` key en la app ni en Vercel con prefijo `NEXT_PUBLIC_`.
+- Vercel: variables de entorno solo en el panel; activar "Deployment Protection" para las previews.

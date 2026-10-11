@@ -10,6 +10,8 @@ const schema = z.object({
   password: z.string().min(1).max(200),
 });
 
+const bloqueado = (seg: number) => `Demasiados intentos. Espera ${Math.ceil(seg / 60)} min e inténtalo de nuevo.`;
+
 export type LoginState = { error?: string };
 
 export async function login(_prev: LoginState, formData: FormData): Promise<LoginState> {
@@ -24,10 +26,19 @@ export async function login(_prev: LoginState, formData: FormData): Promise<Logi
   if (!parsed.success) return { error: "Ingresa un correo y una contraseña válidos." };
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword(parsed.data);
 
-  // Mensaje generico: no revelar si el correo existe.
-  if (error) return { error: "Correo o contraseña incorrectos." };
+  // Bloqueo progresivo (migracion 0007). Si la migracion aun no esta aplicada, no se bloquea el acceso.
+  const { data: espera } = await supabase.rpc("login_estado", { p_email: parsed.data.email });
+  if (typeof espera === "number" && espera > 0) return { error: bloqueado(espera) };
+
+  const { error } = await supabase.auth.signInWithPassword(parsed.data);
+  if (error) {
+    const { data: nueva } = await supabase.rpc("login_fallo", { p_email: parsed.data.email });
+    if (typeof nueva === "number" && nueva > 0) return { error: bloqueado(nueva) };
+    // Mensaje generico: no revelar si el correo existe.
+    return { error: "Correo o contraseña incorrectos." };
+  }
+  await supabase.rpc("login_ok", { p_email: parsed.data.email });
 
   redirect("/dashboard");
 }
