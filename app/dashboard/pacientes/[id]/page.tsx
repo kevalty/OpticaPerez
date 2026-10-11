@@ -30,12 +30,24 @@ export default async function PacientePage({ params, searchParams }: PageProps<"
   if (!uuid.safeParse(id).success) notFound();
 
   const supabase = await createClient();
-  const { data: p } = await supabase
+  const { data: p, error: errorPaciente } = await supabase
     .from("patients")
     .select("id, nombre, tipo_documento, documento, direccion, telefono, email, edad, ocupacion, fecha_registro")
     .eq("id", id)
     .is("deleted_at", null)
     .maybeSingle();
+  if (errorPaciente) {
+    // Un error de la base (p. ej. migracion pendiente) no es "pagina no encontrada".
+    console.error("paciente fallo:", errorPaciente.code);
+    return (
+      <>
+        <Link href="/dashboard/pacientes" className={btnGhost}>← Pacientes</Link>
+        <p role="alert" className="max-w-xl rounded-xl bg-amber-50 px-4 py-3 text-sm text-brand">
+          No se pudo cargar el paciente. Si el problema continúa, avisa al administrador (puede faltar actualizar la base de datos).
+        </p>
+      </>
+    );
+  }
   if (!p) notFound();
   // Bitacora: quien vio los datos personales de este paciente.
   await supabase.rpc("log_access", { p_tabla: "patients", p_registro_id: id });

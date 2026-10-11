@@ -10,6 +10,7 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  preload: false, // solo se usa en la hora de la agenda; evita el aviso de "precargada pero no usada"
 });
 
 export const metadata: Metadata = {
