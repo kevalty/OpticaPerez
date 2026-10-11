@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { DISENOS, EXTERIORES, MATERIALES, REC_COLUMNAS, REC_OJOS, TRATAMIENTOS, campo, type Prefijo } from "@/lib/recetario";
 import { btnGhost, inputCls } from "@/lib/ui";
 
-const small = `${inputCls} !px-2 !py-1.5 !text-sm`;
+const small = `${inputCls} !min-h-0 !px-2 !py-1.5 !text-sm`;
 const chip =
   "inline-flex min-h-10 cursor-pointer select-none items-center rounded-full border border-brand/20 px-3 py-1.5 text-sm text-brand transition hover:bg-iris-light has-[:checked]:border-brand has-[:checked]:bg-brand has-[:checked]:text-white has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-iris";
 
