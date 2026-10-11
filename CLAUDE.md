@@ -65,3 +65,9 @@ Todas en PostgreSQL/Supabase con llaves foráneas, `created_at`/`updated_at` y s
 | 12 | Ajustes finales, capacitación y entrega |
 
 Mantener esta tabla actualizada conforme avance el desarrollo.
+
+## ECC (everything-claude-code) — instalación mínima
+De `affaan-m/ecc` v2.2.3 (MIT, ver `.claude/ECC-LICENSE`) solo se copió lo útil, sin hooks y sin MCP, para gastar pocos tokens:
+- Skills (`.claude/skills/`): `tdd-workflow`, `verification-loop`, `postgres-patterns`, `token-budget-advisor`, `strategic-compact`, `context-budget`.
+- Reglas (`.claude/rules/ecc-*.md`): seguridad común, seguridad TypeScript y pruebas.
+No instalar además el plugin completo (`ecc@ecc`): duplicaría skills. La revisión de seguridad la hace Claude directamente, sin ECC.
