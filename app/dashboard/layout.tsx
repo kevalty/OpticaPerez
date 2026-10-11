@@ -4,6 +4,7 @@ import { requireUser } from "@/lib/auth";
 import { MODULES, ROLE_LABEL } from "@/lib/roles";
 import { logout } from "@/app/login/actions";
 import { btnGhost } from "@/lib/ui";
+import { Inactividad } from "@/components/inactividad";
 import { Atajos } from "@/components/atajos";
 import { NavLinks } from "@/components/nav-links";
 
@@ -25,7 +26,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
             <p className="text-sm font-semibold text-brand">{user.nombre || user.email}</p>
             <p className="text-xs text-brand-dark/60">{ROLE_LABEL[user.rol]}</p>
           </div>
-          <form action={logout}>
+          <form id="form-salir" action={logout}>
             <button className={btnGhost}>Salir</button>
           </form>
         </div>
@@ -33,6 +34,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
 
       {links.length > 0 && <NavLinks items={links.map((m) => ({ id: m.id, titulo: m.titulo, href: m.href! }))} />}
       <Atajos />
+      <Inactividad formId="form-salir" />
 
       {user.activo ? (
         children

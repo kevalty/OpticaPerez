@@ -37,6 +37,8 @@ export default async function PacientePage({ params, searchParams }: PageProps<"
     .is("deleted_at", null)
     .maybeSingle();
   if (!p) notFound();
+  // Bitacora: quien vio los datos personales de este paciente.
+  await supabase.rpc("log_access", { p_tabla: "patients", p_registro_id: id });
 
   const puedeDarTurno = user.rol === "recepcionista" || user.rol === "administrador";
   const veFichas = user.rol === "doctor" || user.rol === "administrador";
