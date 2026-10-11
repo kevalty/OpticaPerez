@@ -15,7 +15,7 @@ export default async function EditarPacientePage({ params }: PageProps<"/dashboa
   const supabase = await createClient();
   const { data: p } = await supabase
     .from("patients")
-    .select("nombre, tipo_documento, documento, direccion, telefono, edad, ocupacion")
+    .select("nombre, tipo_documento, documento, direccion, telefono, email, edad, ocupacion")
     .eq("id", id)
     .is("deleted_at", null)
     .maybeSingle();

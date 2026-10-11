@@ -40,12 +40,12 @@ export default async function PacientesPage({ searchParams }: PageProps<"/dashbo
 
       {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">No se pudo cargar la lista de pacientes.</p>}
 
-      <section className={`${card} divide-y divide-brand/10 p-0`}>
+      <section data-lista className={`${card} divide-y divide-brand/10 p-0`}>
         {pacientes.length === 0 ? (
           <p className="p-5 text-sm text-brand-dark/70">{q ? "No hay pacientes que coincidan con la búsqueda." : "Aún no hay pacientes registrados."}</p>
         ) : (
           pacientes.map((p) => (
-            <Link key={p.id} href={`/dashboard/pacientes/${p.id}`} className="flex items-center justify-between gap-4 px-5 py-3 hover:bg-iris-light/50">
+            <Link key={p.id} href={`/dashboard/pacientes/${p.id}`} className="flex items-center justify-between gap-4 px-5 py-3 outline-none hover:bg-iris-light/50 focus-visible:bg-iris-light">
               <span className="font-medium text-brand">{p.nombre}</span>
               <span className="text-sm text-brand-dark/60">
                 {[p.documento, p.telefono, p.edad != null ? `${p.edad} años` : null].filter(Boolean).join(" · ")}

@@ -3,6 +3,8 @@
 export const NEGOCIO = {
   nombre: "OPTICA PEREZ",
   lineas: ["CENTRO DE OPTOMETRIA - CONTACTOLOGIA", "Examen Visual Computarizado", "MULTIPLES SERVICIOS"],
+  // Correo que sale en "Informacion de la optica" del recetario (opcional, variable OPTICA_CORREO).
+  correo: process.env.OPTICA_CORREO ?? "",
   servicios: "OFTALMOLOGIA - CONTACTOLOGIA - OPTOMETRIA - OPTICA POR COMPUTACION",
   // Ciudad que sale en "Riobamba, 19 de SEPTIEMBRE del 2026". Se puede cambiar con OPTICA_CIUDAD.
   ciudad: process.env.OPTICA_CIUDAD ?? "Riobamba",

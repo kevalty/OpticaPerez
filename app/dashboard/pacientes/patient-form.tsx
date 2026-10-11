@@ -11,6 +11,7 @@ type Initial = {
   tipo_documento?: string;
   documento?: string | null;
   telefono?: string | null;
+  email?: string | null;
   direccion?: string | null;
   edad?: number | null;
   ocupacion?: string | null;
@@ -56,8 +57,9 @@ export function PatientForm({
             required
             maxLength={20}
             inputMode={tipo === "cedula" ? "numeric" : "text"}
+            autoComplete="off"
             pattern={tipo === "cedula" ? "[0-9]{10}" : "[A-Za-z0-9]{5,20}"}
-            title={tipo === "cedula" ? "10 dígitos" : "5 a 20 letras o números"}
+            title={tipo === "cedula" ? "10 dígitos, incluido el 0 del inicio" : "5 a 20 letras o números"}
             defaultValue={initial.documento ?? ""}
             className={inputCls}
           />
@@ -67,6 +69,11 @@ export function PatientForm({
       <label className="flex flex-col gap-1 text-sm font-medium text-brand">
         Celular *
         <input name="telefono" type="tel" required maxLength={30} defaultValue={initial.telefono ?? ""} className={inputCls} />
+      </label>
+      <label className="flex flex-col gap-1 text-sm font-medium text-brand">
+        Correo electrónico *
+        <input name="email" type="email" required maxLength={120} autoComplete="off" defaultValue={initial.email ?? ""} placeholder="nombre@correo.com" className={inputCls} />
+        <span className="text-xs font-normal text-brand-dark/60">Se puede repetir entre pacientes (por ejemplo, una familia con el mismo correo).</span>
       </label>
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="flex flex-col gap-1 text-sm font-medium text-brand">

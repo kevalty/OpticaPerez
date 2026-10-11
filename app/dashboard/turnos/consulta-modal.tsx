@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { ModalShell, CerrarBoton } from "@/components/modal-shell";
 import { FichaView } from "@/components/ficha-view";
 import { rxComoTexto } from "@/lib/ficha";
 import type { FichaCompleta } from "@/lib/fichas-server";
@@ -13,6 +13,7 @@ export type PacienteConsulta = {
   tipo_documento: string;
   documento: string | null;
   telefono: string | null;
+  email: string | null;
   edad: number | null;
   ocupacion: string | null;
   direccion: string | null;
@@ -41,6 +42,7 @@ export function ConsultaModal({
   const datos: [string, string | number | null][] = [
     [paciente.tipo_documento === "pasaporte" ? "Pasaporte" : "Cédula", paciente.documento],
     ["Celular", paciente.telefono],
+    ["Correo", paciente.email],
     ["Edad", paciente.edad != null ? `${paciente.edad} años` : null],
     ["Ocupación", paciente.ocupacion],
     ["Dirección", paciente.direccion],
@@ -50,16 +52,16 @@ export function ConsultaModal({
     `${formatDateLong(f.ficha.fecha)} · ${nombreOpt.get(f.ficha.optometrista_id) ?? "Otro profesional"}`;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 p-3 sm:p-8" role="dialog" aria-modal="true" aria-label="Consulta">
+    <ModalShell cerrarHref={cerrarHref} titulo={`Consulta de ${paciente.nombre}`}>
       <div className="mx-auto flex max-w-4xl flex-col gap-5 rounded-2xl bg-white p-5 shadow-xl sm:p-7">
         <header className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-wide text-brand-dark/50">En consultorio</p>
             <h2 className="text-2xl font-semibold text-brand">{paciente.nombre}</h2>
           </div>
-          <Link href={cerrarHref} className="rounded-lg border border-brand/20 px-3 py-1.5 text-sm text-brand hover:bg-iris-light">
-            Cerrar
-          </Link>
+          <CerrarBoton className="rounded-lg border border-brand/20 px-3 py-1.5 text-sm text-brand hover:bg-iris-light">
+            Cerrar <kbd className="ml-1 rounded bg-iris-light px-1 text-xs">Esc</kbd>
+          </CerrarBoton>
         </header>
 
         <section className={card}>
@@ -107,6 +109,6 @@ export function ConsultaModal({
           <FichaForm action={action} prefill={prefill} />
         </section>
       </div>
-    </div>
+    </ModalShell>
   );
 }

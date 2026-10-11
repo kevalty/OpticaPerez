@@ -7,19 +7,10 @@ const optionalText = (max: number) =>
     .preprocess((v) => (v == null ? "" : v), z.string().trim().max(max, `Máximo ${max} caracteres`))
     .transform((v) => (v === "" ? null : v.replace(CONTROL_CHARS, "")));
 
-// Cedula ecuatoriana: 10 digitos, provincia 01-24 o 30, tercer digito < 6 y digito verificador (modulo 10).
+// Cedula ecuatoriana: 10 digitos (el 0 inicial cuenta, p. ej. 0601234567) y provincia 01-30.
+// El digito verificador NO se exige: hay cedulas reales que no lo cumplen y no se puede dejar sin registrar a un paciente.
 export function isValidCedulaEC(value: string): boolean {
-  if (!/^\d{10}$/.test(value)) return false;
-  const province = Number(value.slice(0, 2));
-  if (!((province >= 1 && province <= 24) || province === 30)) return false;
-  if (Number(value[2]) >= 6) return false;
-  let sum = 0;
-  for (let i = 0; i < 9; i++) {
-    let n = Number(value[i]) * (i % 2 === 0 ? 2 : 1);
-    if (n > 9) n -= 9;
-    sum += n;
-  }
-  return (10 - (sum % 10)) % 10 === Number(value[9]);
+  return /^\d{10}$/.test(value) && Number(value.slice(0, 2)) >= 1 && Number(value.slice(0, 2)) <= 30;
 }
 
 export const patientSchema = z
@@ -31,7 +22,12 @@ export const patientSchema = z
       .max(200, "El nombre es demasiado largo")
       .transform((v) => v.replace(CONTROL_CHARS, "")),
     tipo_documento: z.enum(["cedula", "pasaporte"], "Elige el tipo de documento"),
-    documento: z.string().trim().min(1, "El número de documento es obligatorio").max(20, "El documento es demasiado largo"),
+    documento: z
+      .string()
+      .trim()
+      .min(1, "El número de documento es obligatorio")
+      .max(20, "El documento es demasiado largo")
+      .transform((v) => v.replace(/[\s.\-]/g, "")), // quita espacios, puntos y guiones al pegar
     telefono: z
       .string("El celular es obligatorio")
       .trim()
@@ -41,6 +37,13 @@ export const patientSchema = z
       .refine((v) => v.replace(/\D/g, "").length >= 9 && v.replace(/\D/g, "").length <= 15, {
         message: "El celular debe tener entre 9 y 15 dígitos",
       }),
+    email: z
+      .string("El correo es obligatorio")
+      .trim()
+      .toLowerCase()
+      .min(1, "El correo es obligatorio")
+      .max(120, "El correo es demasiado largo")
+      .pipe(z.email("El correo no es válido. Ejemplo: nombre@correo.com")),
     direccion: optionalText(300),
     edad: z.preprocess(
       (v) => (v == null || v === "" ? null : Number(v)),
@@ -50,7 +53,7 @@ export const patientSchema = z
   })
   .superRefine((p, ctx) => {
     if (p.tipo_documento === "cedula" && !isValidCedulaEC(p.documento)) {
-      ctx.addIssue({ code: "custom", path: ["documento"], message: "La cédula no es válida. Revisa los 10 dígitos." });
+      ctx.addIssue({ code: "custom", path: ["documento"], message: "La cédula debe tener 10 dígitos (incluye el 0 del inicio) y empezar con un código de provincia entre 01 y 30." });
     }
     if (p.tipo_documento === "pasaporte" && !/^[A-Za-z0-9]{5,20}$/.test(p.documento)) {
       ctx.addIssue({ code: "custom", path: ["documento"], message: "El pasaporte debe tener entre 5 y 20 letras o números." });

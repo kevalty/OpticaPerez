@@ -2,9 +2,16 @@ import Image from "next/image";
 import { controlCada, dpTotal, fechaCertificado, fmtDp } from "@/lib/certificado";
 import { formatRx } from "@/lib/ficha";
 import { NEGOCIO } from "@/lib/negocio";
+import type { Recetario } from "@/lib/recetario";
 
 export type CertificadoDatos = {
   paciente: string;
+  tipo_documento: string;
+  documento: string | null;
+  telefono: string | null;
+  email: string | null;
+  direccion: string | null;
+  recetario: Recetario | null;
   fecha: string;
   optometrista: string | null;
   registro_msp: string | null;

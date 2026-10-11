@@ -4,6 +4,8 @@ import { requireUser } from "@/lib/auth";
 import { MODULES, ROLE_LABEL } from "@/lib/roles";
 import { logout } from "@/app/login/actions";
 import { btnGhost } from "@/lib/ui";
+import { Atajos } from "@/components/atajos";
+import { NavLinks } from "@/components/nav-links";
 
 // Todo el panel depende de la sesion y de datos de pacientes: nunca se prerenderiza ni se cachea.
 export const dynamic = "force-dynamic";
@@ -13,7 +15,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
   const links = user.activo ? MODULES.filter((m) => m.href && m.roles.includes(user.rol)) : [];
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-6 py-6 print:max-w-none print:p-0">
+    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-6 pb-28 sm:px-6 sm:pb-6 print:max-w-none print:p-0">
       <header className="flex flex-wrap items-center justify-between gap-4 print:hidden">
         <Link href="/dashboard" aria-label="Inicio">
           <Image src="/logo.png" alt="Óptica Pérez" width={360} height={249} className="h-auto w-24" />
@@ -29,18 +31,8 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
         </div>
       </header>
 
-      {links.length > 0 && (
-        <nav className="flex flex-wrap gap-2 border-b border-brand/10 pb-3 print:hidden">
-          <Link href="/dashboard" className="rounded-full px-3 py-1 text-sm text-brand hover:bg-iris-light">
-            Inicio
-          </Link>
-          {links.map((m) => (
-            <Link key={m.id} href={m.href!} className="rounded-full px-3 py-1 text-sm text-brand hover:bg-iris-light">
-              {m.titulo}
-            </Link>
-          ))}
-        </nav>
-      )}
+      {links.length > 0 && <NavLinks items={links.map((m) => ({ id: m.id, titulo: m.titulo, href: m.href! }))} />}
+      <Atajos />
 
       {user.activo ? (
         children

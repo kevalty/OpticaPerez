@@ -60,7 +60,7 @@ export default async function NuevoTurnoPage({ searchParams }: PageProps<"/dashb
         <button className={btnGhost}>Buscar</button>
       </form>
 
-      <section className={`${card} divide-y divide-brand/10 p-0`}>
+      <section data-lista className={`${card} divide-y divide-brand/10 p-0`}>
         {pacientes.length === 0 ? (
           <p className="p-5 text-sm text-brand-dark/70">{q ? "No se encontró ningún paciente." : "Aún no hay pacientes registrados."}</p>
         ) : (
@@ -68,7 +68,7 @@ export default async function NuevoTurnoPage({ searchParams }: PageProps<"/dashb
             <Link
               key={p.id}
               href={`/dashboard/turnos/nuevo?${q ? `q=${encodeURIComponent(q)}&` : ""}paciente=${p.id}`}
-              className={`flex items-center justify-between gap-3 px-5 py-3 hover:bg-iris-light/50 ${p.id === paciente?.id ? "bg-iris-light/60" : ""}`}
+              className={`flex items-center justify-between gap-3 px-5 py-3 outline-none hover:bg-iris-light/50 focus-visible:bg-iris-light ${p.id === paciente?.id ? "bg-iris-light/60" : ""}`}
             >
               <span className="font-medium text-brand">{p.nombre}</span>
               <span className="text-xs text-brand-dark/60">{[p.documento, p.telefono].filter(Boolean).join(" · ")}</span>
