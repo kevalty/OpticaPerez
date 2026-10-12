@@ -56,6 +56,8 @@ const ICONOS: Record<string, React.ReactNode> = {
   ),
 };
 
+ICONOS.productos = ICONOS.inventario;
+
 export function Icono({ id, className = "size-6" }: { id: string; className?: string }) {
   return (
     <svg {...base} className={className}>

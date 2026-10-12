@@ -80,7 +80,10 @@ export default async function PacientePage({ params, searchParams }: PageProps<"
           <Link href="/dashboard/pacientes" className="text-sm text-iris hover:underline">← Pacientes</Link>
           <h1 className="text-2xl font-semibold text-brand">{p.nombre}</h1>
         </div>
-        <Link href={`/dashboard/pacientes/${id}/editar`} className={btnGhost}>Editar datos</Link>
+        <div className="flex flex-wrap gap-2">
+          {puedeDarTurno && <Link href={`/dashboard/ventas/nueva?paciente=${id}`} className={btnPrimary}>Nueva venta</Link>}
+          <Link href={`/dashboard/pacientes/${id}/editar`} className={btnGhost}>Editar datos</Link>
+        </div>
       </div>
 
       {error && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
