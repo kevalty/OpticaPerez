@@ -34,3 +34,24 @@ export function formatDateLong(iso: string): string {
     timeZone: "UTC",
   });
 }
+
+// Inicio y fin (instantes UTC, ISO) del dia local "fecha" en la zona del negocio. Para filtrar columnas timestamptz por dia.
+export function rangoDia(iso: string): { desde: string; hasta: string } {
+  const inicio = (dia: string) => {
+    const guess = new Date(`${dia}T00:00:00Z`);
+    const partes = new Intl.DateTimeFormat("en-US", { timeZone: TZ, timeZoneName: "longOffset" }).formatToParts(guess);
+    const off = partes.find((p) => p.type === "timeZoneName")?.value ?? "GMT";
+    const m = off.match(/GMT([+-])(\d{2}):?(\d{2})?/);
+    const minutos = m ? (m[1] === "-" ? -1 : 1) * (Number(m[2]) * 60 + Number(m[3] ?? 0)) : 0;
+    return new Date(guess.getTime() - minutos * 60_000).toISOString();
+  };
+  return { desde: inicio(iso), hasta: inicio(shiftDate(iso, 1)) };
+}
+
+export function horaLocal(ts: string): string {
+  return new Intl.DateTimeFormat("es", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date(ts));
+}
+
+export function fechaHoraLocal(ts: string): string {
+  return new Intl.DateTimeFormat("es", { timeZone: TZ, dateStyle: "medium", timeStyle: "short" }).format(new Date(ts));
+}

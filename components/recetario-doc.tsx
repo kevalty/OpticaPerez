@@ -89,7 +89,7 @@ const Linea = ({ k, v }: { k: string; v?: string | null }) => (
 );
 
 // Hoja "RX" para el laboratorio. Horizontal (A4 apaisado). Lo que el doctor no lleno queda en blanco.
-export function RecetarioDoc({ c }: { c: CertificadoDatos }) {
+export function RecetarioDoc({ c }: { c: Pick<CertificadoDatos, "fecha" | "paciente" | "tipo_documento" | "documento" | "direccion" | "telefono" | "email" | "recetario"> }) {
   const r = c.recetario;
   const direccionOptica = NEGOCIO.sucursales[0]?.locales[0]?.replace(/ - .*$/, "").replace(/^Local \d+:\s*/, "") ?? "";
   return (

@@ -54,7 +54,7 @@ Todas en PostgreSQL/Supabase con llaves foráneas, `created_at`/`updated_at` y s
 | 1 | Proyecto base Next.js + Supabase, modelo de datos, autenticación y roles iniciales. **Estado: completada y verificada en producción (login con rol administrador).** |
 | 2 | Pacientes y turnos. **Estado: completada; ajustada en la semana 3 (cédula, turnos con fecha/hora, flujo doctor → recepción).** |
 | 3 | Ficha médica digital completa con RLS por rol. **Estado: código listo; falta aplicar `0003` a `0006` (ver `supabase/README.md`).** Incluye la hoja **RX** (así la llama el doctor; formato Essilor para el laboratorio) dentro de la ficha, módulo **Fichas médicas** (`/dashboard/fichas`, solo doctor/administrador), correo del paciente (obligatorio, puede repetirse), cédula sin dígito verificador obligatorio, inicio con iconos estilo app y atajos de teclado (`components/atajos.tsx`, `components/modal-shell.tsx`). |
-| 4 | Ventas y órdenes de trabajo |
+| 4 | Ventas y órdenes de trabajo. **Estado: código listo; falta aplicar `0008` (ver `supabase/README.md`).** Catálogo de productos con stock (`/dashboard/productos`, solo administrador), venta rápida para recepción en una sola pantalla (`components/pos-venta.tsx`: paciente, productos, descuentos por renglón y global —recepción hasta 20 %, más solo administrador—, cobro completo/abono/sin pago, orden de trabajo), abonos y saldos pendientes, comprobante interno (NO es factura SRI) y orden de trabajo + hoja RX imprimibles, anulación (solo administrador, devuelve stock). El dinero y el stock se calculan en la base (`crear_venta`), nunca en el navegador. Recepción solo ve sus propias ventas (RLS). |
 | 5 | Seguimiento de pedidos e historial |
 | 6 | Recordatorios por WhatsApp |
 | 7 | Inventario |
