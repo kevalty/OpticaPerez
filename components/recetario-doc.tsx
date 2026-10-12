@@ -88,7 +88,7 @@ const Linea = ({ k, v }: { k: string; v?: string | null }) => (
   </div>
 );
 
-// Hoja "RECETARIO" para el laboratorio. Horizontal (A4 apaisado). Lo que el doctor no lleno queda en blanco.
+// Hoja "RX" para el laboratorio. Horizontal (A4 apaisado). Lo que el doctor no lleno queda en blanco.
 export function RecetarioDoc({ c }: { c: CertificadoDatos }) {
   const r = c.recetario;
   const direccionOptica = NEGOCIO.sucursales[0]?.locales[0]?.replace(/ - .*$/, "").replace(/^Local \d+:\s*/, "") ?? "";
@@ -97,7 +97,7 @@ export function RecetarioDoc({ c }: { c: CertificadoDatos }) {
       <style>{`@media print { @page { size: A4 landscape; margin: 10mm; } }`}</style>
 
       <header className="flex items-end justify-between gap-4">
-        <h1 className="text-3xl font-extrabold tracking-wide text-brand">RECETARIO</h1>
+        <h1 className="text-3xl font-extrabold tracking-wide text-brand">RX</h1>
         <div className="flex gap-6 text-xs">
           <div className="min-w-36 border-b border-brand/40 text-center">{dmy(c.fecha)}</div>
           <div className="min-w-36 border-b border-brand/40 text-center">{r?.fecha_entrega ? dmy(r.fecha_entrega) : ""}</div>

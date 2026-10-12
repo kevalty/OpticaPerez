@@ -125,7 +125,7 @@ export function FichaForm({
 
       <section className="flex flex-col gap-3">
         <div>
-          <h4 className="font-semibold text-brand">Recetario de lentes</h4>
+          <h4 className="font-semibold text-brand">RX de lentes</h4>
           <p className="text-xs text-brand-dark/70">
             La hoja que se envía al laboratorio (formato Essilor). Es opcional: si el paciente no necesita lentes, déjala vacía.
           </p>

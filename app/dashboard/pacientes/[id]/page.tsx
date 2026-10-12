@@ -124,6 +124,7 @@ export default async function PacientePage({ params, searchParams }: PageProps<"
                   {formatDateLong(f.ficha.fecha)} · {nombreOpt.get(f.ficha.optometrista_id) ?? "Otro profesional"}
                 </summary>
                 <div className="px-4 pb-4">
+                  <Link href={`/dashboard/fichas/${f.ficha.id}`} className="mb-2 inline-block text-sm text-iris hover:underline">Abrir ficha completa →</Link>
                   <FichaView ficha={f.ficha} rx={f.rx} cl={f.cl} />
                 </div>
               </details>

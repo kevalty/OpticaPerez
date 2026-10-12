@@ -8,23 +8,23 @@ import { createClient } from "@/lib/supabase/server";
 import { btnGhost, btnPrimary } from "@/lib/ui";
 import { uuid } from "@/lib/validation";
 
-export const metadata = { title: "Recetario · Óptica Pérez" };
+export const metadata = { title: "RX · Óptica Pérez" };
 
 // Igual que el certificado: la recepcionista solo recibe de la BD lo que se imprime (certificado_recepcion).
-export default async function RecetarioPage({ params }: PageProps<"/dashboard/turnos/[id]/recetario">) {
+export default async function RecetarioPage({ params }: PageProps<"/dashboard/turnos/[id]/rx">) {
   await requireRole("recepcionista", "doctor", "administrador");
   const { id } = await params;
   if (!uuid.safeParse(id).success) notFound();
 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("certificado_recepcion", { p_turno: id });
-  if (error) console.error("recetario fallo:", error.code);
+  if (error) console.error("rx fallo:", error.code);
   const c = data as CertificadoDatos | null;
 
   if (!c) {
     const mensaje = error
-      ? "No se pudo cargar el recetario. Inténtalo de nuevo."
-      : "Este turno todavía no tiene recetario. Solo se puede imprimir cuando el doctor guardó la ficha y el turno está en “Atendido”.";
+      ? "No se pudo cargar la RX. Inténtalo de nuevo."
+      : "Este turno todavía no tiene RX. Solo se puede imprimir cuando el doctor guardó la ficha y el turno está en “Atendido”.";
     return (
       <>
         <div><Link href="/dashboard/turnos" className={btnGhost}>← Volver a turnos</Link></div>
@@ -41,7 +41,7 @@ export default async function RecetarioPage({ params }: PageProps<"/dashboard/tu
       </div>
       {!c.recetario && (
         <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-brand print:hidden">
-          El doctor no llenó el recetario en esta consulta. Se imprime la hoja con los datos del paciente y el resto en blanco.
+          El doctor no llenó la RX en esta consulta. Se imprime la hoja con los datos del paciente y el resto en blanco.
         </p>
       )}
       <RecetarioDoc c={c} />
