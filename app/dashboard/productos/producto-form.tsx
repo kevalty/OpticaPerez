@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useEffect, useRef } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { TIPOS_PRODUCTO } from "@/lib/ventas";
 import { btnGhost, btnPrimary, inputCls } from "@/lib/ui";
 import type { FormState } from "@/lib/validation";
@@ -22,7 +22,8 @@ export function ProductoForm({
   const [state, formAction, pending] = useActionState(action, {} as FormState);
   const errorRef = useRef<HTMLParagraphElement>(null);
   const v = (c: string, ini: string | number | null | undefined) => state.values?.[c] ?? String(ini ?? "");
-  const controla = state.values ? state.values.controla_stock === "on" : (initial.controla_stock ?? true);
+  const [tipo, setTipo] = useState(initial.tipo ?? "montura");
+  const [controla, setControla] = useState(state.values ? state.values.controla_stock === "on" : (initial.controla_stock ?? true));
   useEffect(() => {
     if (state.error) errorRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
   }, [state]);
@@ -36,7 +37,15 @@ export function ProductoForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="flex flex-col gap-1 text-sm font-medium text-brand">
           Tipo *
-          <select name="tipo" defaultValue={v("tipo", initial.tipo ?? "montura")} className={inputCls}>
+          <select
+            name="tipo"
+            defaultValue={v("tipo", initial.tipo ?? "montura")}
+            onChange={(e) => {
+              setTipo(e.target.value);
+              if (e.target.value === "servicio") setControla(false); // un servicio no tiene stock
+            }}
+            className={inputCls}
+          >
             {TIPOS_PRODUCTO.map((t) => (
               <option key={t.id} value={t.id}>{t.label}</option>
             ))}
@@ -64,7 +73,7 @@ export function ProductoForm({
         )}
       </div>
       <label className="flex min-h-11 items-center gap-3 text-sm font-medium text-brand">
-        <input type="checkbox" name="controla_stock" defaultChecked={controla} className="size-5 accent-[#262d7a]" />
+        <input type="checkbox" name="controla_stock" checked={controla} disabled={tipo === "servicio"} onChange={(e) => setControla(e.target.checked)} className="size-5 accent-[#262d7a]" />
         Controla stock (desmárcalo para lentes que se mandan a hacer)
       </label>
 
