@@ -165,7 +165,7 @@ function ParResumen({ titulo, p }: { titulo: string; p: Par }) {
 function RecetarioResumen({ r }: { r: Recetario }) {
   return (
     <section className="flex flex-col gap-3">
-      <h4 className="font-semibold text-brand">Recetario de lentes{r.fecha_entrega ? ` · entrega ${r.fecha_entrega.split("-").reverse().join("/")}` : ""}</h4>
+      <h4 className="font-semibold text-brand">RX de lentes{r.fecha_entrega ? ` · entrega ${r.fecha_entrega.split("-").reverse().join("/")}` : ""}</h4>
       {r.primaria && <ParResumen titulo="Prescripción primaria" p={r.primaria} />}
       {r.segundo && <ParResumen titulo="Segundo par" p={r.segundo} />}
     </section>

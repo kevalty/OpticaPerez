@@ -109,7 +109,7 @@ export function parVacio(p: Par | null | undefined): boolean {
 // Devuelve null si el doctor no lleno nada del recetario (es opcional).
 export function leerRecetario(fd: FormData): { ok: true; value: Recetario | null } | { ok: false; error: string } {
   const f = limpio(fd.get("rec_fecha_entrega"), 10);
-  if (f && !/^\d{4}-\d{2}-\d{2}$/.test(f)) return { ok: false, error: "La fecha de entrega del recetario no es válida." };
+  if (f && !/^\d{4}-\d{2}-\d{2}$/.test(f)) return { ok: false, error: "La fecha de entrega de la RX no es válida." };
   const primaria = leerPar(fd, "p");
   const segundo = leerPar(fd, "s");
   if (!primaria && !segundo && !f) return { ok: true, value: null };

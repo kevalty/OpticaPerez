@@ -93,7 +93,7 @@ function Bloque({ pre, titulo }: { pre: Prefijo; titulo: string }) {
   );
 }
 
-// Recetario de lentes (formato Essilor). Opcional: si no se llena, no se guarda.
+// RX de lentes (hoja para el laboratorio, formato Essilor). Opcional: si no se llena, no se guarda.
 export function RecetarioFields() {
   const raiz = useRef<HTMLDivElement>(null);
   const [segundo, setSegundo] = useState(false);
