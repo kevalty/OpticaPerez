@@ -13,6 +13,7 @@ export const TIPOS_PRODUCTO = [
   { id: "montura", label: "Montura" },
   { id: "lente", label: "Lente" },
   { id: "insumo", label: "Insumo" },
+  { id: "servicio", label: "Servicio" },
 ] as const;
 export const tipoLabel = (id: string) => TIPOS_PRODUCTO.find((t) => t.id === id)?.label ?? id;
 
@@ -69,7 +70,7 @@ export type VentaInput = z.infer<typeof ventaSchema>;
 const CTRL = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
 export const productoSchema = z.object({
   nombre: z.string().trim().min(1, "El nombre es obligatorio").max(200, "El nombre es demasiado largo").transform((v) => v.replace(CTRL, "")),
-  tipo: z.enum(["montura", "lente", "insumo"], "Elige el tipo de producto"),
+  tipo: z.enum(["montura", "lente", "insumo", "servicio"], "Elige el tipo de producto"),
   codigo: z
     .string()
     .trim()

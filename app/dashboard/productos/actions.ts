@@ -12,6 +12,7 @@ const LISTA = "/dashboard/productos";
 
 function errorProducto(code: string | undefined): string {
   if (code === "23505") return "Ya existe un producto con ese código.";
+  if (code === "22P02") return "Falta actualizar la base de datos (migración 0009, tipo servicio). Avisa al administrador.";
   if (code === "42703" || code === "PGRST204") return "Falta actualizar la base de datos (migración 0008). Avisa al administrador.";
   return "No se pudo guardar el producto. Inténtalo de nuevo.";
 }

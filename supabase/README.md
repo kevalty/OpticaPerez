@@ -16,6 +16,7 @@ Aplica en orden, una vez cada una, en el SQL Editor:
 - `0006_correo_recetario.sql` (correo del paciente, recetario de lentes dentro de la ficha; actualiza `guardar_ficha` y `certificado_recepcion`). **Aplicarla ANTES de publicar la version nueva de la app.**
 - `0007_seguridad.sql` (bloqueo progresivo de logins, bitacora `log_access` restringida).
 - `0008_ventas.sql` (Semana 4: productos con stock, ventas con descuentos y abonos, ordenes de trabajo, anulacion, hoja RX para la orden). Toda la logica de dinero y stock vive en funciones (`crear_venta`, `registrar_abono`, `anular_venta`, `ajustar_stock`, `rx_orden`).
+- `0009_servicios.sql` (tipo de producto "servicio"; **ejecutarla sola**, un valor nuevo de enum no se puede usar en la misma transaccion).
 
 ## Datos del doctor que salen en el certificado
 El nombre y el registro del Ministerio de Salud Publica se imprimen bajo la firma. Hasta que exista la
