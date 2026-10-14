@@ -36,7 +36,7 @@ export default async function FichaPage({ params }: PageProps<"/dashboard/fichas
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
-        <Link href="/dashboard/fichas" className="text-sm text-iris hover:underline">← Fichas médicas</Link>
+        <Link href="/dashboard/fichas" className="inline-flex min-h-11 items-center text-sm text-iris hover:underline">← Fichas médicas</Link>
         <div className="flex gap-2">
           {p && <Link href={`/dashboard/pacientes/${p.id}`} className={btnGhost}>Ver paciente</Link>}
           <PrintButton className={btnGhost} />

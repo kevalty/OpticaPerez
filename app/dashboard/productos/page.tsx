@@ -56,7 +56,7 @@ export default async function ProductosPage({ searchParams }: PageProps<"/dashbo
                 <span className="flex items-center gap-3 text-sm">
                   <span className="font-semibold text-brand">{dinero(p.precio)}</span>
                   {p.controla_stock ? (
-                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${bajo ? "bg-amber-100 text-amber-800" : "bg-iris-light text-brand"}`}>Stock {p.stock}</span>
+                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${bajo ? "bg-amber-100 text-amber-800" : "bg-iris-light text-brand"}`}>{bajo ? "Stock bajo" : "Stock"} · {p.stock}</span>
                   ) : (
                     <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">A pedido</span>
                   )}

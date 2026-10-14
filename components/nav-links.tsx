@@ -20,7 +20,7 @@ export function NavLinks({ items }: { items: Item[] }) {
             key={m.id}
             href={m.href}
             aria-current={activo(m.href) ? "page" : undefined}
-            className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition ${
+            className={`inline-flex min-h-11 items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition ${
               activo(m.href) ? "bg-brand text-white" : "text-brand hover:bg-iris-light"
             }`}
           >

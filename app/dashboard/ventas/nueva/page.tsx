@@ -22,7 +22,7 @@ export default async function NuevaVentaPage({ searchParams }: PageProps<"/dashb
   return (
     <>
       <div>
-        <Link href="/dashboard/ventas" className="text-sm text-iris hover:underline">← Ventas</Link>
+        <Link href="/dashboard/ventas" className="inline-flex min-h-11 items-center text-sm text-iris hover:underline">← Ventas</Link>
         <h1 className="text-2xl font-semibold text-brand">Nueva venta</h1>
       </div>
       <PosVenta

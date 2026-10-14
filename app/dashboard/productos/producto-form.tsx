@@ -61,11 +61,13 @@ export function ProductoForm({
           Precio ($) *
           <input name="precio" type="number" inputMode="decimal" step="0.01" min="0" required defaultValue={v("precio", initial.precio)} className={inputCls} />
         </label>
+        {controla && (
         <label className="flex flex-col gap-1 text-sm font-medium text-brand">
           Stock mínimo
           <input name="stock_minimo" type="number" min="0" step="1" defaultValue={v("stock_minimo", initial.stock_minimo ?? 0)} className={inputCls} />
         </label>
-        {nuevo && (
+        )}
+        {nuevo && controla && (
           <label className="flex flex-col gap-1 text-sm font-medium text-brand">
             Stock inicial
             <input name="stock" type="number" min="0" step="1" defaultValue={v("stock", 0)} className={inputCls} />
