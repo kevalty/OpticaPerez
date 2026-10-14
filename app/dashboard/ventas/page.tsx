@@ -90,23 +90,28 @@ export default async function VentasPage({ searchParams }: PageProps<"/dashboard
           ventas.map((v) => {
             const saldo = v.total - v.pagado;
             return (
-              <Link key={v.id} href={`/dashboard/ventas/${v.id}`} className="flex min-h-14 flex-wrap items-center justify-between gap-x-4 gap-y-1 px-5 py-3 hover:bg-iris-light/50 focus-visible:bg-iris-light">
-                <span>
-                  <span className="font-mono text-sm text-brand-dark/60">N.º {num(v.numero)}</span>
-                  <span className="ml-3 font-medium text-brand">{v.patients?.nombre ?? "Mostrador"}</span>
-                  <span className="ml-2 text-xs text-brand-dark/60">{soloSaldo ? new Date(v.fecha).toLocaleDateString("es") : horaLocal(v.fecha)}</span>
-                </span>
-                <span className="flex items-center gap-3">
-                  <span className="font-semibold text-brand">{dinero(v.total)}</span>
-                  {v.estado === "anulada" ? (
-                    <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">Anulada</span>
-                  ) : saldo > 0 ? (
-                    <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800">Saldo {dinero(saldo)}</span>
-                  ) : (
-                    <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800">Pagada</span>
-                  )}
-                </span>
-              </Link>
+              <div key={v.id} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-5 py-1 hover:bg-iris-light/30">
+                <Link href={`/dashboard/ventas/${v.id}`} className="flex min-h-14 flex-1 flex-wrap items-center justify-between gap-x-4 gap-y-1 py-2 focus-visible:bg-iris-light">
+                  <span>
+                    <span className="font-mono text-sm text-brand-dark/60">N.º {num(v.numero)}</span>
+                    <span className="ml-3 font-medium text-brand">{v.patients?.nombre ?? "Mostrador"}</span>
+                    <span className="ml-2 text-xs text-brand-dark/60">{soloSaldo ? new Date(v.fecha).toLocaleDateString("es") : horaLocal(v.fecha)}</span>
+                  </span>
+                  <span className="flex items-center gap-3">
+                    <span className="font-semibold text-brand">{dinero(v.total)}</span>
+                    {v.estado === "anulada" ? (
+                      <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">Anulada</span>
+                    ) : saldo > 0 ? (
+                      <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800">Saldo {dinero(saldo)}</span>
+                    ) : (
+                      <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800">Pagada</span>
+                    )}
+                  </span>
+                </Link>
+                {v.estado === "activa" && saldo > 0 && (
+                  <Link href={`/dashboard/ventas/${v.id}#abono`} className={btnPrimary}>Cobrar saldo</Link>
+                )}
+              </div>
             );
           })
         )}

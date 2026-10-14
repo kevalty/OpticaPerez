@@ -1,4 +1,5 @@
--- Optica Perez - La hoja RX de la orden usa la Rx principal de la ficha cuando la hoja RX no trae medidas.
+-- Optica Perez - La hoja RX de la orden usa la Rx principal de la ficha cuando la hoja RX no trae medidas,
+-- y su fecha por defecto es la de Guayaquil (antes podia salir con el dia siguiente al final de la tarde).
 -- Aplicar DESPUES de 0008/0009 (SQL Editor -> pegar todo -> Run). Es seguro correrla mas de una vez.
 
 create or replace function public.rx_orden(p_orden uuid)
@@ -14,7 +15,7 @@ begin
   select jsonb_build_object(
     'paciente', p.nombre, 'tipo_documento', p.tipo_documento, 'documento', p.documento,
     'telefono', p.telefono, 'email', p.email, 'direccion', p.direccion,
-    'fecha', coalesce(mr.fecha, current_date),
+    'fecha', coalesce(mr.fecha, (now() at time zone 'America/Guayaquil')::date),  -- fecha local, no la del servidor (UTC)
     'recetario', mr.recetario,
     'tiene_ficha', (mr.id is not null),
     -- Rx principal de la ficha: respaldo cuando la hoja RX no tiene las medidas llenas
