@@ -22,7 +22,7 @@ export default async function ProductoPage({ params }: PageProps<"/dashboard/pro
   return (
     <>
       <div>
-        <Link href="/dashboard/productos" className="text-sm text-iris hover:underline">← Productos</Link>
+        <Link href="/dashboard/productos" className="inline-flex min-h-11 items-center text-sm text-iris hover:underline">← Productos</Link>
         <h1 className="text-2xl font-semibold text-brand">{p.nombre}</h1>
       </div>
       <ProductoForm action={actualizarProducto.bind(null, id)} initial={p} submitLabel="Guardar cambios" />

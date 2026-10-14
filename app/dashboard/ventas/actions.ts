@@ -10,7 +10,7 @@ import { ventaSchema } from "@/lib/ventas";
 
 // Errores que la base lanza a proposito (P0001 = regla de negocio, con mensaje claro en espanol).
 function mensajeBD(error: { code?: string; message: string }, generico: string): string {
-  if (error.code === "P0001") return error.message;
+  if (error.code === "P0001") return error.message.replace(/(\d)\.(\d{2})\b/g, "$1,$2"); // 81.50 -> 81,50
   if (error.code === "42501") return "No tienes permiso para esta acción.";
   if (error.code === "P0002") return "No se encontró el registro.";
   if (error.code === "42883" || error.code === "PGRST202") return "Falta actualizar la base de datos (migración 0008). Avisa al administrador.";

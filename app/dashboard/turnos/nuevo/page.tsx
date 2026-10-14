@@ -37,7 +37,7 @@ export default async function NuevoTurnoPage({ searchParams }: PageProps<"/dashb
   return (
     <>
       <div>
-        <Link href="/dashboard/turnos" className="text-sm text-iris hover:underline">← Turnos</Link>
+        <Link href="/dashboard/turnos" className="inline-flex min-h-11 items-center text-sm text-iris hover:underline">← Turnos</Link>
         <h1 className="text-2xl font-semibold text-brand">Dar turno</h1>
       </div>
 

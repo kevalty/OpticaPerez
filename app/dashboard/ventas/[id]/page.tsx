@@ -48,7 +48,7 @@ export default async function VentaPage({ params, searchParams }: PageProps<"/da
     <>
       <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
         <div>
-          <Link href="/dashboard/ventas" className="text-sm text-iris hover:underline">← Ventas</Link>
+          <Link href="/dashboard/ventas" className="inline-flex min-h-11 items-center text-sm text-iris hover:underline">← Ventas</Link>
           <h1 className="text-2xl font-semibold text-brand">Venta N.º {num(v.numero)}</h1>
           <p className="text-sm text-brand-dark/70">{fechaHoraLocal(v.fecha)}</p>
         </div>

@@ -132,3 +132,31 @@ export function resumenPar(p: Par): { diseno: string | null; tratamiento: string
     material: un(p.material, MATERIALES, p.material_otro),
   };
 }
+
+// ---------- Respaldo: si la hoja RX no trae medidas, se toman de la Rx principal de la ficha ----------
+export type RxFicha = { ojo: string; esfera: number | null; cilindro: number | null; eje: number | null; add: number | null; dp: number | null }[];
+
+const signo = (n: number) => (n > 0 ? `+${n.toFixed(2)}` : n.toFixed(2));
+
+export function conRxDeFicha(r: Recetario | null, rx: RxFicha | undefined): Recetario | null {
+  if (!rx || rx.length === 0) return r;
+  const vacio = (): Par["od"] => Object.fromEntries(REC_COLUMNAS.map((c) => [c.key, null])) as Par["od"];
+  const base: Par = r?.primaria ?? {
+    od: vacio(), oi: vacio(), diseno: null, diseno_detalle: null, tratamientos: [], tratamiento_otro: null,
+    exteriores: [], exteriores_detalle: null, material: null, material_otro: null,
+  };
+  const completar = (ojo: "OD" | "OI", actual: Par["od"]): Par["od"] => {
+    const f = rx.find((x) => x.ojo === ojo);
+    if (!f) return actual;
+    const doc = (v: number | null, fmt: (n: number) => string) => (v == null ? null : fmt(v));
+    return {
+      ...actual,
+      esfera: actual.esfera ?? doc(f.esfera, signo),
+      cilindro: actual.cilindro ?? doc(f.cilindro, signo),
+      eje: actual.eje ?? doc(f.eje, String),
+      adicion: actual.adicion ?? doc(f.add, signo),
+      dp_lejos: actual.dp_lejos ?? doc(f.dp, String),
+    };
+  };
+  return { fecha_entrega: r?.fecha_entrega ?? null, segundo: r?.segundo ?? null, primaria: { ...base, od: completar("OD", base.od), oi: completar("OI", base.oi) } };
+}

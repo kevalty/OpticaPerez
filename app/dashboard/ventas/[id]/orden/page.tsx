@@ -11,7 +11,7 @@ import { uuid } from "@/lib/validation";
 
 export const metadata = { title: "Orden de trabajo · Óptica Pérez" };
 
-type RxOrden = Pick<CertificadoDatos, "fecha" | "paciente" | "tipo_documento" | "documento" | "direccion" | "telefono" | "email" | "recetario"> & { tiene_ficha: boolean };
+type RxOrden = Pick<CertificadoDatos, "fecha" | "paciente" | "tipo_documento" | "documento" | "direccion" | "telefono" | "email" | "recetario"> & { tiene_ficha: boolean; rx?: CertificadoDatos["rx"] };
 
 // Orden de trabajo + hoja RX. La RX llega por rx_orden(): la recepcionista no lee fichas, solo lo que lleva la hoja.
 export default async function OrdenPage({ params }: PageProps<"/dashboard/ventas/[id]/orden">) {

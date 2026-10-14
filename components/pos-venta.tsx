@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore, useTransition } from "react";
 import { crearVenta } from "@/app/dashboard/ventas/actions";
 import { buscarPacientes } from "@/app/dashboard/pacientes/actions";
 import type { PacienteFila } from "@/lib/pacientes";
@@ -44,12 +44,30 @@ export function PosVenta({
   const [desc, setDesc] = useState<DescuentoGlobal>({ tipo: "porcentaje", valor: 0 });
   const [pagoModo, setPagoModo] = useState<PagoModo>("total");
   const [pagoOtro, setPagoOtro] = useState("");
-  const [metodo, setMetodo] = useState<Metodo>("efectivo");
+  const metodoGuardado = useSyncExternalStore(
+    () => () => {},
+    () => {
+      try {
+        return localStorage.getItem("pos_metodo");
+      } catch {
+        return null;
+      }
+    },
+    () => null,
+  );
+  const [metodoElegido, setMetodoElegido] = useState<Metodo | null>(null);
+  const metodo = (metodoElegido ?? (METODOS.some((m) => m.id === metodoGuardado) ? (metodoGuardado as Metodo) : "efectivo")) as Metodo;
+  function elegirMetodo(m: Metodo) {
+    setMetodoElegido(m);
+    try {
+      localStorage.setItem("pos_metodo", m); // se recuerda el ultimo metodo usado
+    } catch {}
+  }
   const [ordenManual, setOrdenManual] = useState<boolean | null>(null);
   const [entrega, setEntrega] = useState(entregaSugerida);
   const [notas, setNotas] = useState("");
   const [obs, setObs] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [fallo, setFallo] = useState<{ texto: string; clave: string } | null>(null);
   const [enviando, startEnvio] = useTransition();
   const [, startBusqueda] = useTransition();
   const ultimaBusqueda = useRef(0);
@@ -97,7 +115,11 @@ export function PosVenta({
   const conOrden = ordenManual ?? (hayLente && paciente != null);
   const pago =
     pagoModo === "total" ? t.total : pagoModo === "mitad" ? redondear(t.total / 2) : pagoModo === "ninguno" ? 0 : redondear(Number(pagoOtro.replace(",", ".")) || 0);
-  const saldo = redondear(t.total - pago);
+  const excede = pago > t.total + 0.004;
+  const saldo = Math.max(0, redondear(t.total - pago));
+  const clave = JSON.stringify([lineas, desc, pagoModo, pagoOtro, conOrden, paciente?.id ?? null, entrega]);
+  const error = fallo && fallo.clave === clave ? fallo.texto : null; // un aviso viejo se borra al corregir
+  const setError = (texto: string | null) => setFallo(texto ? { texto, clave } : null);
   const pasaLimite = esAdmin || t.pctTotal <= MAX_DESCUENTO_RECEPCION + 1e-9;
 
   function enviar() {
@@ -120,6 +142,23 @@ export function PosVenta({
     });
   }
 
+  const enviarRef = useRef<() => void>(() => {});
+  useEffect(() => {
+    enviarRef.current = enviar;
+  });
+  // Ctrl+Enter registra la venta desde cualquier parte de la pagina.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.key === "Enter" || e.code === "Enter" || e.code === "NumpadEnter") && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        enviarRef.current();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+
   return (
     <form
       ref={formRef}
@@ -128,11 +167,7 @@ export function PosVenta({
         enviar();
       }}
       onKeyDown={(e) => {
-        if (e.key !== "Enter") return;
-        if (e.ctrlKey || e.metaKey) {
-          e.preventDefault();
-          enviar();
-        } else if ((e.target as HTMLElement).tagName === "INPUT") {
+        if (e.key === "Enter" && !e.ctrlKey && !e.metaKey && (e.target as HTMLElement).tagName === "INPUT") {
           e.preventDefault(); // Enter dentro de un campo no registra la venta por accidente
         }
       }}
@@ -281,9 +316,9 @@ export function PosVenta({
                         </td>
                         <td className="py-2 pr-2">
                           <div className="flex items-center gap-1">
-                            <button type="button" aria-label="Quitar uno" onClick={() => cambiar(l.product_id, { cantidad: Math.max(1, l.cantidad - 1) })} className="size-10 rounded-lg border border-brand/20 text-lg text-brand hover:bg-iris-light">−</button>
+                            <button type="button" aria-label="Quitar uno" onClick={() => cambiar(l.product_id, { cantidad: Math.max(1, l.cantidad - 1) })} className="size-11 rounded-lg border border-brand/20 text-lg text-brand hover:bg-iris-light">−</button>
                             <span className="w-8 text-center font-medium">{l.cantidad}</span>
-                            <button type="button" aria-label="Agregar uno" onClick={() => cambiar(l.product_id, { cantidad: Math.min(l.controla_stock ? l.stock : 999, l.cantidad + 1) })} className="size-10 rounded-lg border border-brand/20 text-lg text-brand hover:bg-iris-light">+</button>
+                            <button type="button" aria-label="Agregar uno" onClick={() => cambiar(l.product_id, { cantidad: Math.min(l.controla_stock ? l.stock : 999, l.cantidad + 1) })} className="size-11 rounded-lg border border-brand/20 text-lg text-brand hover:bg-iris-light">+</button>
                           </div>
                         </td>
                         <td className="py-2 pr-2">
@@ -302,7 +337,7 @@ export function PosVenta({
                         </td>
                         <td className="py-2 pr-2 text-right font-medium text-brand">{dinero(neto)}</td>
                         <td className="py-2 text-right">
-                          <button type="button" aria-label={`Quitar ${l.nombre}`} onClick={() => quitar(l.product_id)} className="size-10 rounded-lg text-red-700 hover:bg-red-50">✕</button>
+                          <button type="button" aria-label={`Quitar ${l.nombre}`} onClick={() => quitar(l.product_id)} className="size-11 rounded-lg text-red-700 hover:bg-red-50">✕</button>
                         </td>
                       </tr>
                     );
@@ -352,6 +387,13 @@ export function PosVenta({
               <input type="number" inputMode="decimal" min={0} step="0.5" value={desc.valor || ""} placeholder="0" aria-label="Descuento" onChange={(e) => setDesc({ ...desc, valor: Math.max(0, Number(e.target.value) || 0) })} className={`${inputCls} !w-20`} />
             </dd>
           </div>
+          <div className="flex flex-wrap gap-1.5" aria-label="Descuentos rápidos">
+            {[5, 10, 20].map((n) => (
+              <button key={n} type="button" onClick={() => setDesc({ tipo: "porcentaje", valor: desc.tipo === "porcentaje" && desc.valor === n ? 0 : n })} aria-pressed={desc.tipo === "porcentaje" && desc.valor === n} className={`min-h-11 rounded-lg border px-3 text-sm font-medium ${desc.tipo === "porcentaje" && desc.valor === n ? "border-brand bg-brand text-white" : "border-brand/20 text-brand hover:bg-iris-light"}`}>
+                {n} %
+              </button>
+            ))}
+          </div>
           {t.global > 0 && <div className="flex justify-between text-brand-dark/70"><dt>− Descuento</dt><dd>{dinero(t.global)}</dd></div>}
           <div className="mt-1 flex justify-between border-t border-brand/10 pt-2 text-xl font-bold text-brand"><dt>Total</dt><dd>{dinero(t.total)}</dd></div>
           {t.descuentoTotal > 0 && (
@@ -375,12 +417,15 @@ export function PosVenta({
             <input type="number" inputMode="decimal" min={0} step="0.01" max={t.total} value={pagoOtro} onChange={(e) => setPagoOtro(e.target.value)} placeholder="Monto a cobrar ahora" aria-label="Monto a cobrar ahora" className={inputCls} />
           )}
           {pago > 0 && (
-            <select value={metodo} onChange={(e) => setMetodo(e.target.value as Metodo)} aria-label="Método de pago" className={inputCls}>
+            <div className="grid grid-cols-2 gap-2" role="group" aria-label="Método de pago">
               {METODOS.map((m) => (
-                <option key={m.id} value={m.id}>{m.label}</option>
+                <button key={m.id} type="button" aria-pressed={metodo === m.id} onClick={() => elegirMetodo(m.id)} className={`min-h-11 rounded-lg border px-2 text-sm font-medium ${metodo === m.id ? "border-iris bg-iris text-white" : "border-brand/20 text-brand hover:bg-iris-light"}`}>
+                  {m.label}
+                </button>
               ))}
-            </select>
+            </div>
           )}
+          {excede && <p role="alert" className="text-xs font-medium text-red-700">El monto supera el total ({dinero(t.total)}).</p>}
           <div className="flex justify-between text-sm"><span>Cobra ahora</span><strong>{dinero(pago)}</strong></div>
           <div className={`flex justify-between text-sm ${saldo > 0 ? "font-semibold text-amber-700" : "text-emerald-700"}`}>
             <span>Saldo pendiente</span><strong>{dinero(saldo)}</strong>
@@ -396,6 +441,16 @@ export function PosVenta({
         <button disabled={enviando || lineas.length === 0} className={`${btnPrimary} !min-h-12 text-base`}>
           {enviando ? "Registrando…" : "Registrar venta"}
         </button>
+        {lineas.length > 0 && (
+          // Barra fija en celular / tableta: total, saldo y registrar sin bajar hasta el final.
+          <div className="fixed inset-x-0 bottom-[4.4rem] z-30 flex items-center justify-between gap-3 border-t border-brand/10 bg-white/95 px-4 py-2 shadow-lg backdrop-blur lg:hidden">
+            <div className="leading-tight">
+              <p className="text-xs text-brand-dark/60">Total · saldo {dinero(saldo)}</p>
+              <p className="text-lg font-bold text-brand">{dinero(t.total)}</p>
+            </div>
+            <button disabled={enviando} className={`${btnPrimary} !min-h-12`}>{enviando ? "Registrando…" : "Registrar venta"}</button>
+          </div>
+        )}
         <p className="text-center text-xs text-brand-dark/60">
           <kbd className="rounded bg-iris-light px-1">/</kbd> buscar producto · <kbd className="rounded bg-iris-light px-1">Ctrl</kbd>+<kbd className="rounded bg-iris-light px-1">Enter</kbd> registrar
         </p>

@@ -7,7 +7,9 @@ import {
   REC_COLUMNAS,
   REC_OJOS,
   TRATAMIENTOS,
+  conRxDeFicha,
   type Par,
+  type RxFicha,
 } from "@/lib/recetario";
 
 // "2026-09-19" -> "19/09/2026" (D/M/A como en la hoja)
@@ -89,8 +91,8 @@ const Linea = ({ k, v }: { k: string; v?: string | null }) => (
 );
 
 // Hoja "RX" para el laboratorio. Horizontal (A4 apaisado). Lo que el doctor no lleno queda en blanco.
-export function RecetarioDoc({ c }: { c: Pick<CertificadoDatos, "fecha" | "paciente" | "tipo_documento" | "documento" | "direccion" | "telefono" | "email" | "recetario"> }) {
-  const r = c.recetario;
+export function RecetarioDoc({ c }: { c: Pick<CertificadoDatos, "fecha" | "paciente" | "tipo_documento" | "documento" | "direccion" | "telefono" | "email" | "recetario"> & { rx?: RxFicha } }) {
+  const r = conRxDeFicha(c.recetario, c.rx);
   const direccionOptica = NEGOCIO.sucursales[0]?.locales[0]?.replace(/ - .*$/, "").replace(/^Local \d+:\s*/, "") ?? "";
   return (
     <article className="mx-auto flex w-full max-w-[297mm] flex-col gap-3 bg-white px-8 py-6 text-[11px] leading-snug text-brand-dark ring-1 ring-brand/10 print:max-w-none print:px-0 print:py-0 print:ring-0">

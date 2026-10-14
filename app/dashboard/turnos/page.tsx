@@ -187,6 +187,7 @@ export default async function TurnosPage({ searchParams }: PageProps<"/dashboard
                     <>
                       <Link href={`/dashboard/turnos/${t.id}/certificado`} className={btnGhost}>Imprimir certificado</Link>
                       <Link href={`/dashboard/turnos/${t.id}/rx`} className={btnGhost}>Imprimir RX</Link>
+                      <Link href={`/dashboard/ventas/nueva?paciente=${t.patient_id}`} className={btnPrimary}>Cobrar</Link>
                     </>
                   )}
                   {esRecep && t.estado === "atendido" && (

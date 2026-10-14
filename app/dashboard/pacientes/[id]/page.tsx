@@ -77,7 +77,7 @@ export default async function PacientePage({ params, searchParams }: PageProps<"
     <>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <Link href="/dashboard/pacientes" className="text-sm text-iris hover:underline">← Pacientes</Link>
+          <Link href="/dashboard/pacientes" className="inline-flex min-h-11 items-center text-sm text-iris hover:underline">← Pacientes</Link>
           <h1 className="text-2xl font-semibold text-brand">{p.nombre}</h1>
         </div>
         <div className="flex flex-wrap gap-2">
