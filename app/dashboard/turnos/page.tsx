@@ -92,6 +92,7 @@ export default async function TurnosPage({ searchParams }: PageProps<"/dashboard
             nombreOpt={nombreOpt}
             cerrarHref={volverHref}
             action={guardarFicha.bind(null, consultaId, fecha)}
+            borradorKey={consultaId}
           />
         );
       }

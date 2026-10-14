@@ -60,7 +60,7 @@ const texto = (max: number) =>
 
 const numero = (label: string, min: number, max: number, entero = false) =>
   z.preprocess(
-    (v) => (v == null || v === "" ? null : Number(v)),
+    (v) => (v == null || v === "" ? null : Number(String(v).trim().replace(",", "."))), // acepta 1,25 y 1.25
     (entero ? z.number().int(`${label}: debe ser entero`) : z.number(`${label}: debe ser un número`))
       .min(min, `${label}: mínimo ${min}`)
       .max(max, `${label}: máximo ${max}`)
