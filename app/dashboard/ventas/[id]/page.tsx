@@ -112,7 +112,7 @@ export default async function VentaPage({ params, searchParams }: PageProps<"/da
           </ul>
         )}
         {!anulada && saldo > 0 && (
-          <div className="mt-4 border-t border-brand/10 pt-4">
+          <div id="abono" className="mt-4 scroll-mt-4 border-t border-brand/10 pt-4">
             <h3 className="mb-2 text-sm font-semibold text-brand">Registrar abono o pago del saldo</h3>
             <AbonoForm ventaId={v.id} saldo={saldo} />
           </div>

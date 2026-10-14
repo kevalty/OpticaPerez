@@ -291,60 +291,48 @@ export function PosVenta({
             </div>
           )}
 
-          {/* Carrito */}
+          {/* Carrito: una tarjeta por renglon (sin desplazamiento lateral en celular) */}
           {lineas.length > 0 && (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[34rem] text-left text-sm">
-                <thead>
-                  <tr className="text-xs uppercase tracking-wide text-brand-dark/50">
-                    <th className="py-1 pr-2 font-medium">Producto</th>
-                    <th className="py-1 pr-2 font-medium">Cant.</th>
-                    <th className="py-1 pr-2 font-medium">Desc. %</th>
-                    <th className="py-1 pr-2 text-right font-medium">Total</th>
-                    <th className="py-1"></th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-brand/10">
-                  {lineas.map((l) => {
-                    const bruto = redondear(l.cantidad * l.precio);
-                    const neto = redondear(bruto - redondear((bruto * l.descuento_pct) / 100));
-                    return (
-                      <tr key={l.product_id}>
-                        <td className="py-2 pr-2">
-                          <span className="font-medium text-brand">{l.nombre}</span>
-                          <span className="block text-xs text-brand-dark/60">{dinero(l.precio)} c/u</span>
-                        </td>
-                        <td className="py-2 pr-2">
-                          <div className="flex items-center gap-1">
-                            <button type="button" aria-label="Quitar uno" onClick={() => cambiar(l.product_id, { cantidad: Math.max(1, l.cantidad - 1) })} className="size-11 rounded-lg border border-brand/20 text-lg text-brand hover:bg-iris-light">−</button>
-                            <span className="w-8 text-center font-medium">{l.cantidad}</span>
-                            <button type="button" aria-label="Agregar uno" onClick={() => cambiar(l.product_id, { cantidad: Math.min(l.controla_stock ? l.stock : 999, l.cantidad + 1) })} className="size-11 rounded-lg border border-brand/20 text-lg text-brand hover:bg-iris-light">+</button>
-                          </div>
-                        </td>
-                        <td className="py-2 pr-2">
-                          <input
-                            type="number"
-                            inputMode="decimal"
-                            min={0}
-                            max={100}
-                            step="0.5"
-                            value={l.descuento_pct || ""}
-                            placeholder="0"
-                            aria-label={`Descuento de ${l.nombre}`}
-                            onChange={(e) => cambiar(l.product_id, { descuento_pct: Math.min(100, Math.max(0, Number(e.target.value) || 0)) })}
-                            className={`${inputCls} !w-20`}
-                          />
-                        </td>
-                        <td className="py-2 pr-2 text-right font-medium text-brand">{dinero(neto)}</td>
-                        <td className="py-2 text-right">
-                          <button type="button" aria-label={`Quitar ${l.nombre}`} onClick={() => quitar(l.product_id)} className="size-11 rounded-lg text-red-700 hover:bg-red-50">✕</button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+            <ul className="flex flex-col gap-2">
+              {lineas.map((l) => {
+                const bruto = redondear(l.cantidad * l.precio);
+                const neto = redondear(bruto - redondear((bruto * l.descuento_pct) / 100));
+                return (
+                  <li key={l.product_id} className="flex flex-col gap-2 rounded-xl border border-brand/15 p-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="font-medium text-brand">{l.nombre}</p>
+                        <p className="text-xs text-brand-dark/60">{dinero(l.precio)} c/u</p>
+                      </div>
+                      <button type="button" aria-label={`Quitar ${l.nombre}`} onClick={() => quitar(l.product_id)} className="size-11 shrink-0 rounded-lg text-red-700 hover:bg-red-50">✕</button>
+                    </div>
+                    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+                      <div className="flex items-center gap-1">
+                        <button type="button" aria-label="Quitar uno" onClick={() => cambiar(l.product_id, { cantidad: Math.max(1, l.cantidad - 1) })} className="size-11 rounded-lg border border-brand/20 text-lg text-brand hover:bg-iris-light">−</button>
+                        <span className="w-9 text-center font-medium">{l.cantidad}</span>
+                        <button type="button" aria-label="Agregar uno" onClick={() => cambiar(l.product_id, { cantidad: Math.min(l.controla_stock ? l.stock : 999, l.cantidad + 1) })} className="size-11 rounded-lg border border-brand/20 text-lg text-brand hover:bg-iris-light">+</button>
+                      </div>
+                      <label className="flex items-center gap-2 text-xs text-brand-dark/70">
+                        Desc. %
+                        <input
+                          type="number"
+                          inputMode="decimal"
+                          min={0}
+                          max={100}
+                          step="0.5"
+                          value={l.descuento_pct || ""}
+                          placeholder="0"
+                          aria-label={`Descuento de ${l.nombre}`}
+                          onChange={(e) => cambiar(l.product_id, { descuento_pct: Math.min(100, Math.max(0, Number(e.target.value) || 0)) })}
+                          className={`${inputCls} !w-20`}
+                        />
+                      </label>
+                      <p className="ml-auto text-lg font-semibold text-brand">{dinero(neto)}</p>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
           )}
         </section>
 
