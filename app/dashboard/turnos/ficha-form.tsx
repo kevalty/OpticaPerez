@@ -46,11 +46,13 @@ export function FichaForm({
   prefill,
   rxPrevio,
   borradorKey,
+  encabezado,
 }: {
   action: (prev: FormState, formData: FormData) => Promise<FormState>;
   prefill: { rx_anterior_od?: string; rx_anterior_oi?: string };
   rxPrevio: RxPrevio;
   borradorKey: string;
+  encabezado?: React.ReactNode; // datos del paciente y ficha anterior: se desplazan junto con el formulario
 }) {
   const [state, formAction, pending] = useActionState(action, {} as FormState);
   const form = useRef<HTMLFormElement>(null);
@@ -173,8 +175,10 @@ export function FichaForm({
           paso(e.key === "ArrowRight" ? 1 : -1);
         }
       }}
-      className="flex flex-col gap-4"
+      className="flex min-h-0 flex-1 flex-col"
     >
+      <div data-scroll className="relative flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-5 py-4 sm:px-7">
+      {encabezado}
       {/* Modo */}
       <div className="flex flex-wrap items-center gap-3">
         <div role="tablist" aria-label="Tipo de ficha" className="inline-flex rounded-xl bg-iris-light/60 p-1">
@@ -393,12 +397,14 @@ export function FichaForm({
         </p>
       )}
 
+      </div>
+
       {state.error && (
-        <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{state.error}</p>
+        <p role="alert" className="mx-5 mb-2 shrink-0 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{state.error}</p>
       )}
 
       {/* Barra de acciones siempre a la vista */}
-      <div className="sticky bottom-0 -mx-5 -mb-5 flex flex-wrap items-center gap-3 border-t border-brand/10 bg-white/95 px-5 py-3 backdrop-blur sm:-mx-7 sm:-mb-7 sm:px-7">
+      <div className="flex shrink-0 flex-wrap items-center gap-3 border-t border-brand/10 bg-white px-5 py-3 sm:px-7">
         <span className={`text-xs font-semibold ${guardado ? "text-emerald-700" : "text-brand-dark/50"}`}>{guardado ? "● Borrador guardado" : "○ Borrador automático"}</span>
         <span className="hidden text-xs text-brand-dark/60 md:inline">
           <kbd className="rounded bg-iris-light px-1">Ctrl</kbd>+<kbd className="rounded bg-iris-light px-1">Enter</kbd> guarda

@@ -48,6 +48,12 @@ export function ModalShell({ cerrarHref, titulo, children }: { cerrarHref: strin
     } else if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();
       raiz.current?.querySelector("form")?.requestSubmit();
+    } else if ((e.key === "PageDown" || e.key === "PageUp") && !["TEXTAREA", "SELECT"].includes((e.target as HTMLElement).tagName)) {
+      const area = raiz.current?.querySelector<HTMLElement>("[data-scroll]");
+      if (area) {
+        e.preventDefault();
+        area.scrollBy({ top: (e.key === "PageDown" ? 1 : -1) * area.clientHeight * 0.9, behavior: "smooth" });
+      }
     } else if (e.key === "Tab") {
       const items = [...(raiz.current?.querySelectorAll<HTMLElement>(FOCUSABLES) ?? [])].filter((el) => el.offsetParent !== null);
       if (items.length === 0) return;
