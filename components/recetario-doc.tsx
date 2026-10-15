@@ -91,7 +91,7 @@ const Linea = ({ k, v }: { k: string; v?: string | null }) => (
 );
 
 // Hoja "RX" para el laboratorio. Horizontal (A4 apaisado). Lo que el doctor no lleno queda en blanco.
-export function RecetarioDoc({ c }: { c: Pick<CertificadoDatos, "fecha" | "paciente" | "tipo_documento" | "documento" | "direccion" | "telefono" | "email" | "recetario"> & { rx?: RxFicha } }) {
+export function RecetarioDoc({ c }: { c: Pick<CertificadoDatos, "fecha" | "paciente" | "tipo_documento" | "documento" | "direccion" | "telefono" | "email" | "recetario"> & { rx?: RxFicha; fechaEntrega?: string | null } }) {
   const r = conRxDeFicha(c.recetario, c.rx);
   const direccionOptica = NEGOCIO.sucursales[0]?.locales[0]?.replace(/ - .*$/, "").replace(/^Local \d+:\s*/, "") ?? "";
   return (
@@ -102,7 +102,7 @@ export function RecetarioDoc({ c }: { c: Pick<CertificadoDatos, "fecha" | "pacie
         <h1 className="text-3xl font-extrabold tracking-wide text-brand">RX</h1>
         <div className="flex gap-6 text-xs">
           <div className="min-w-36 border-b border-brand/40 text-center">{dmy(c.fecha)}</div>
-          <div className="min-w-36 border-b border-brand/40 text-center">{r?.fecha_entrega ? dmy(r.fecha_entrega) : ""}</div>
+          <div className="min-w-36 border-b border-brand/40 text-center">{c.fechaEntrega ?? r?.fecha_entrega ? dmy((c.fechaEntrega ?? r?.fecha_entrega) as string) : ""}</div>
         </div>
       </header>
       <div className="-mt-2 flex justify-end gap-6 pr-0 text-[9px] text-brand">

@@ -119,11 +119,8 @@ export function RecetarioFields() {
 
   return (
     <div ref={raiz} className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <label className="flex flex-col gap-1 text-sm font-medium text-brand">
-          Fecha de entrega
-          <input type="date" name="rec_fecha_entrega" className={`${small} w-44`} />
-        </label>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-xs text-brand-dark/60">La fecha de entrega de los lentes la define recepción al hacer la venta.</p>
         <button type="button" onClick={copiarRx} className={btnGhost}>
           Copiar Rx de la ficha
         </button>

@@ -66,7 +66,7 @@ export default async function OrdenPage({ params }: PageProps<"/dashboard/ventas
       <OrdenDoc o={o} />
       {rx && (
         <div className="break-before-page">
-          <RecetarioDoc c={rx} />
+          <RecetarioDoc c={{ ...rx, fechaEntrega: orden.fecha_entrega }} />
         </div>
       )}
     </>
