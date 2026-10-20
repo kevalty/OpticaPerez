@@ -120,7 +120,9 @@ export const etiqueta = (opciones: Opcion[], id: string | null) =>
   id ? (opciones.find((o) => o.id === id)?.label ?? id) : null;
 
 // "Progresivo", "Crizal UV + Transitions + Otro (xxx)", etc. para resumenes en pantalla.
-export function resumenPar(p: Par): { diseno: string | null; tratamiento: string | null; exteriores: string | null; material: string | null } {
+type ParSinMedidas = Pick<Par, "diseno" | "diseno_detalle" | "tratamientos" | "tratamiento_otro" | "exteriores" | "exteriores_detalle" | "material" | "material_otro">;
+
+export function resumenPar(p: ParSinMedidas): { diseno: string | null; tratamiento: string | null; exteriores: string | null; material: string | null } {
   const lista = (ids: string[], op: Opcion[], otro: string | null) =>
     ids.map((id) => (id === "otro" ? `Otro${otro ? ` (${otro})` : ""}` : etiqueta(op, id))).join(" + ") || null;
   const un = (id: string | null, op: Opcion[], otro: string | null) =>

@@ -6,7 +6,10 @@ import { createClient } from "@/lib/supabase/server";
 import { fechaHoraLocal } from "@/lib/time";
 import { btnGhost, btnPrimary, card } from "@/lib/ui";
 import { uuid } from "@/lib/validation";
+import { estadoInfo, fechaCorta } from "@/lib/pedidos";
+import { enlaceSeguimiento, siteUrl } from "@/lib/site";
 import { dinero, metodoLabel } from "@/lib/ventas";
+import { mensajeRecibo, waLink } from "@/lib/whatsapp";
 
 export const metadata = { title: "Venta · Óptica Pérez" };
 
@@ -16,9 +19,8 @@ type Venta = {
   patients: { nombre: string; documento: string | null; telefono: string | null } | null;
   sale_items: { id: string; nombre: string | null; cantidad: number; precio_unitario: number; descuento: number }[];
   sale_payments: { id: string; monto: number; metodo: string; nota: string | null; fecha: string }[];
-  orders: { id: string; estado: string; fecha_entrega: string | null; deleted_at: string | null }[];
+  orders: { id: string; estado: string; fecha_entrega: string | null; token: string; deleted_at: string | null }[];
 };
-const ESTADO_ORDEN: Record<string, string> = { enviado_a_hacer: "Enviado a hacer", procesando: "Procesando", listo_para_entrega: "Listo para entrega" };
 const num = (n: number) => String(n).padStart(6, "0");
 
 export default async function VentaPage({ params, searchParams }: PageProps<"/dashboard/ventas/[id]">) {
@@ -31,7 +33,7 @@ export default async function VentaPage({ params, searchParams }: PageProps<"/da
   const { data, error } = await supabase
     .from("sales")
     .select(
-      "id, numero, fecha, subtotal, descuento, total, pagado, estado, observaciones, anulada_motivo, vendedor_id, patient_id, patients(nombre, documento, telefono), sale_items(id, nombre, cantidad, precio_unitario, descuento), sale_payments(id, monto, metodo, nota, fecha), orders(id, estado, fecha_entrega, deleted_at)",
+      "id, numero, fecha, subtotal, descuento, total, pagado, estado, observaciones, anulada_motivo, vendedor_id, patient_id, patients(nombre, documento, telefono), sale_items(id, nombre, cantidad, precio_unitario, descuento), sale_payments(id, monto, metodo, nota, fecha), orders(id, estado, fecha_entrega, token, deleted_at)",
     )
     .eq("id", id)
     .is("deleted_at", null)
@@ -42,6 +44,11 @@ export default async function VentaPage({ params, searchParams }: PageProps<"/da
   const saldo = Math.round((v.total - v.pagado) * 100) / 100;
   const orden = v.orders.find((o) => !o.deleted_at) ?? null;
   const anulada = v.estado === "anulada";
+  // Recibo por WhatsApp (primer mensaje): enlace de seguimiento exclusivo del pedido.
+  const waRecibo =
+    orden && v.patients
+      ? waLink(v.patients.telefono, mensajeRecibo({ nombre: v.patients.nombre.trim().split(" ")[0], numero: v.numero, link: enlaceSeguimiento(await siteUrl(), orden.token) }))
+      : null;
   const pagos = [...v.sale_payments].sort((a, b) => a.fecha.localeCompare(b.fecha));
 
   return (
@@ -55,17 +62,29 @@ export default async function VentaPage({ params, searchParams }: PageProps<"/da
         <div className="flex flex-wrap gap-2">
           <Link href={`/dashboard/ventas/${v.id}/comprobante`} className={btnPrimary}>Imprimir comprobante</Link>
           {orden && <Link href={`/dashboard/ventas/${v.id}/orden`} className={btnGhost}>Imprimir orden + RX</Link>}
+          {orden && <Link href={`/dashboard/pedidos/${orden.id}`} className={btnGhost}>Ver pedido</Link>}
         </div>
       </div>
 
       {sp.ok === "venta" && <p role="status" className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">Venta registrada. Ya puedes imprimir el comprobante{orden ? " y la orden de trabajo" : ""}.</p>}
+      {orden && !anulada && (
+        <section className="flex flex-col gap-2 rounded-2xl bg-emerald-50 p-4 ring-1 ring-emerald-200 print:hidden">
+          <p className="text-sm font-semibold text-emerald-900">Envía el recibo al cliente por WhatsApp</p>
+          <p className="text-xs text-emerald-900/80">Lleva su enlace de seguimiento: verá «enviado a hacer» y cómo avanza hasta que esté listo.</p>
+          {waRecibo ? (
+            <a href={waRecibo} target="_blank" rel="noopener noreferrer" className={`${btnPrimary} !bg-emerald-600 hover:!bg-emerald-700 w-fit`}>Enviar recibo por WhatsApp</a>
+          ) : (
+            <p className="text-sm text-amber-700">El paciente no tiene un celular válido: corrígelo en «Editar datos» del paciente.</p>
+          )}
+        </section>
+      )}
       {anulada && <p role="alert" className="rounded-lg bg-slate-100 px-3 py-2 text-sm text-slate-700"><strong>Venta anulada.</strong> Motivo: {v.anulada_motivo}</p>}
 
       <section className={card}>
         <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-3">
           <div><dt className="text-xs uppercase tracking-wide text-brand-dark/50">Paciente</dt><dd>{v.patients ? <Link href={`/dashboard/pacientes/${v.patient_id}`} className="text-brand hover:underline">{v.patients.nombre}</Link> : "Venta de mostrador"}</dd></div>
           <div><dt className="text-xs uppercase tracking-wide text-brand-dark/50">Celular</dt><dd>{v.patients?.telefono ?? "—"}</dd></div>
-          <div><dt className="text-xs uppercase tracking-wide text-brand-dark/50">Orden de trabajo</dt><dd>{orden ? `${ESTADO_ORDEN[orden.estado] ?? orden.estado}${orden.fecha_entrega ? ` · entrega ${orden.fecha_entrega.split("-").reverse().join("/")}` : ""}` : "No se generó"}</dd></div>
+          <div><dt className="text-xs uppercase tracking-wide text-brand-dark/50">Orden de trabajo</dt><dd>{orden ? `${estadoInfo(orden.estado)?.label ?? orden.estado}${orden.fecha_entrega ? ` · entrega ${fechaCorta(orden.fecha_entrega)}` : ""}` : "No se generó"}</dd></div>
         </dl>
         {v.observaciones && <p className="mt-3 text-sm text-brand-dark/80">Observaciones: {v.observaciones}</p>}
       </section>

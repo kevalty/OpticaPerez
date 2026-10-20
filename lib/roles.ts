@@ -14,7 +14,7 @@ export const MODULES: { id: string; titulo: string; detalle: string; roles: Role
   { id: "fichas", titulo: "Fichas médicas", detalle: "Historia clínica digital", roles: ["doctor", "administrador"], semana: 3, href: "/dashboard/fichas" },
   { id: "ventas", titulo: "Ventas", detalle: "Ventas y órdenes de trabajo", roles: ["recepcionista", "administrador"], semana: 4, href: "/dashboard/ventas" },
   { id: "productos", titulo: "Productos", detalle: "Catálogo y stock", roles: ["administrador"], semana: 4, href: "/dashboard/productos" },
-  { id: "pedidos", titulo: "Pedidos", detalle: "Seguimiento de lentes", roles: ["recepcionista", "doctor", "administrador", "otro"], semana: 5 },
+  { id: "pedidos", titulo: "Pedidos", detalle: "Seguimiento de lentes", roles: ["recepcionista", "doctor", "administrador"], semana: 5, href: "/dashboard/pedidos" },
   { id: "inventario", titulo: "Inventario", detalle: "Productos y stock", roles: ["recepcionista", "administrador", "otro"], semana: 7 },
   { id: "admin", titulo: "Administración", detalle: "Usuarios, reportes y configuración", roles: ["administrador"], semana: 8 },
 ];
