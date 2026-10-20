@@ -18,6 +18,8 @@ Aplica en orden, una vez cada una, en el SQL Editor:
 - `0008_ventas.sql` (Semana 4: productos con stock, ventas con descuentos y abonos, ordenes de trabajo, anulacion, hoja RX para la orden). Toda la logica de dinero y stock vive en funciones (`crear_venta`, `registrar_abono`, `anular_venta`, `ajustar_stock`, `rx_orden`).
 - `0009_servicios.sql` (tipo de producto "servicio"; **ejecutarla sola**, un valor nuevo de enum no se puede usar en la misma transaccion).
 - `0010_rx_orden_respaldo.sql` (la hoja RX de la orden toma la Rx principal de la ficha si la hoja RX no trae medidas).
+- `0011_estados_pedido.sql` (Semana 5: nuevos estados del pedido; **ejecutarla sola**, antes de la 0012).
+- `0012_pedidos.sql` (Semana 5: seguimiento de pedidos, historial, token exclusivo y enlace publico para el cliente; mapea los pedidos viejos a los estados nuevos).
 
 ## Datos del doctor que salen en el certificado
 El nombre y el registro del Ministerio de Salud Publica se imprimen bajo la firma. Hasta que exista la
