@@ -6,8 +6,9 @@ import { createClient } from "@/lib/supabase/server";
 import { isISODate } from "@/lib/time";
 import { uuid } from "@/lib/validation";
 import { ESTADOS_PEDIDO } from "@/lib/pedidos";
+import { enviarMensajePedido } from "@/lib/whatsapp-envios";
 
-export type EstadoPedidoForm = { error?: string; ok?: boolean };
+export type EstadoPedidoForm = { error?: string; ok?: boolean; aviso?: string };
 
 function mensajeBD(error: { code?: string; message: string }, generico: string): string {
   if (error.code === "P0001") return error.message;
@@ -20,7 +21,7 @@ function mensajeBD(error: { code?: string; message: string }, generico: string):
 
 export async function cambiarEstadoPedido(ordenId: string, estado: string, _prev: EstadoPedidoForm): Promise<EstadoPedidoForm> {
   void _prev;
-  await requireRole("recepcionista", "administrador");
+  const user = await requireRole("recepcionista", "administrador");
   if (!uuid.safeParse(ordenId).success || !ESTADOS_PEDIDO.some((e) => e.id === estado)) return { error: "Pedido no válido." };
 
   const supabase = await createClient();
@@ -29,9 +30,16 @@ export async function cambiarEstadoPedido(ordenId: string, estado: string, _prev
     console.error("cambiarEstadoPedido fallo:", error.code);
     return { error: mensajeBD(error, "No se pudo cambiar el estado. Inténtalo de nuevo.") };
   }
+  // Aviso automatico "listo para recibir"; si falla, el estado ya cambio y queda el aviso manual.
+  let aviso: string | undefined;
+  if (estado === "listo_para_recibir") {
+    const r = await enviarMensajePedido(supabase, user.id, ordenId, "pedido_listo", true);
+    aviso = r.ok ? "Se avisó al cliente por WhatsApp." : `No se pudo avisar por WhatsApp: ${r.error} Usa el botón de aviso.`;
+  }
   revalidatePath(`/dashboard/pedidos/${ordenId}`);
   revalidatePath("/dashboard/pedidos");
-  return { ok: true };
+  revalidatePath("/dashboard/whatsapp");
+  return { ok: true, aviso };
 }
 
 export async function guardarEntrega(ordenId: string, _prev: EstadoPedidoForm, formData: FormData): Promise<EstadoPedidoForm> {

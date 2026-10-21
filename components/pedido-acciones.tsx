@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
+import { enviarPedidoWA, type EstadoWA } from "@/app/dashboard/whatsapp/actions";
 import { cambiarEstadoPedido, guardarEntrega, type EstadoPedidoForm } from "@/app/dashboard/pedidos/actions";
 import { btnGhost, btnPrimary, inputCls } from "@/lib/ui";
 
@@ -25,6 +26,7 @@ export function CambiarEstado({
   // El administrador puede entregar con saldo, pero se le pide confirmar.
   const pideConfirmar = siguiente?.id === "entregado" && saldoPendiente > 0 && puedeRetroceder;
   const error = stAvanzar.error ?? stAtras.error;
+  const aviso = stAvanzar.aviso;
 
   return (
     <div className="flex flex-col gap-2">
@@ -64,7 +66,20 @@ export function CambiarEstado({
         </form>
       )}
       {error && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+      {!error && aviso && <p role="status" className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">{aviso}</p>}
     </div>
+  );
+}
+
+// Boton de envio automatico por WhatsApp (recibo o aviso de pedido listo) con respuesta clara.
+export function EnviarWA({ ordenId, tipo, etiqueta, destacado }: { ordenId: string; tipo: "pedido_recibo" | "pedido_listo"; etiqueta: string; destacado?: boolean }) {
+  const [st, accion, pend] = useActionState(enviarPedidoWA.bind(null, ordenId, tipo), {} as EstadoWA);
+  return (
+    <form action={accion} className="flex flex-col gap-1">
+      <button disabled={pend} className={destacado ? `${btnPrimary} !bg-emerald-600 hover:!bg-emerald-700` : btnGhost}>{pend ? "Enviando…" : etiqueta}</button>
+      {st.ok && <span role="status" className="text-sm text-emerald-700">Enviado por WhatsApp.</span>}
+      {st.error && <span role="alert" className="text-sm text-red-700">{st.error}</span>}
+    </form>
   );
 }
 

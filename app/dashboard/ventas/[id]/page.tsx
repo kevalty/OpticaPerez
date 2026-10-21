@@ -78,7 +78,8 @@ export default async function VentaPage({ params, searchParams }: PageProps<"/da
       </div>
 
       {sp.ok === "venta" && <p role="status" className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">Venta registrada. Ya puedes imprimir el comprobante{orden ? " y la orden de trabajo" : ""}.</p>}
-      {orden && !anulada && (
+      {sp.wa === "ok" && <p role="status" className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">Se envió el recibo por WhatsApp al cliente.</p>}
+      {orden && !anulada && sp.wa !== "ok" && (
         <section className="flex flex-col gap-2 rounded-2xl bg-emerald-50 p-4 ring-1 ring-emerald-200 print:hidden">
           <p className="text-sm font-semibold text-emerald-900">Envía el recibo al cliente por WhatsApp</p>
           <p className="text-xs text-emerald-900/80">Lleva su enlace de seguimiento: verá «enviado a hacer» y cómo avanza hasta que esté listo.</p>

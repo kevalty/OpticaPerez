@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { isISODate } from "@/lib/time";
 import { uuid } from "@/lib/validation";
 import { ventaSchema } from "@/lib/ventas";
+import { enviarMensajePedido } from "@/lib/whatsapp-envios";
 
 // Errores que la base lanza a proposito (P0001 = regla de negocio, con mensaje claro en espanol).
 function mensajeBD(error: { code?: string; message: string }, generico: string): string {
@@ -30,8 +31,16 @@ export async function crearVenta(input: unknown): Promise<{ error: string }> {
     if (error) console.error("crearVenta fallo:", error.code);
     return { error: error ? mensajeBD(error, "No se pudo registrar la venta. Inténtalo de nuevo.") : "No se pudo registrar la venta." };
   }
+  const creada = data as { sale_id: string; order_id: string | null };
   revalidatePath("/dashboard/ventas");
-  redirect(`/dashboard/ventas/${(data as { sale_id: string }).sale_id}?ok=venta`);
+  // Recibo automatico por WhatsApp ("enviado a hacer"); si no se puede, queda el boton manual en la venta.
+  let wa = "";
+  if (creada.order_id) {
+    const user = await requireRole("recepcionista", "administrador");
+    const r = await enviarMensajePedido(supabase, user.id, creada.order_id, "pedido_recibo", true);
+    wa = r.ok ? "&wa=ok" : "&wa=no";
+  }
+  redirect(`/dashboard/ventas/${creada.sale_id}?ok=venta${wa}`);
 }
 
 export type EstadoForm = { error?: string; ok?: boolean };
