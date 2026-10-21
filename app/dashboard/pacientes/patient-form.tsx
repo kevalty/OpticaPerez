@@ -12,6 +12,7 @@ type Initial = {
   documento?: string | null;
   telefono?: string | null;
   email?: string | null;
+  acepta_whatsapp?: boolean | null;
   direccion?: string | null;
   edad?: number | null;
   ocupacion?: string | null;
@@ -91,6 +92,10 @@ export function PatientForm({
           <input name="ocupacion" maxLength={120} defaultValue={v("ocupacion", initial.ocupacion)} className={inputCls} />
         </label>
       </div>
+      <label className="flex min-h-11 items-center gap-3 text-sm font-medium text-brand">
+        <input name="acepta_whatsapp" type="checkbox" defaultChecked={state?.values ? state.values.acepta_whatsapp === "on" : initial.acepta_whatsapp !== false} className="size-5" />
+        El paciente acepta recibir mensajes por WhatsApp (pedidos, turnos, controles)
+      </label>
       <label className="flex flex-col gap-1 text-sm font-medium text-brand">
         Dirección
         <input name="direccion" maxLength={300} defaultValue={v("direccion", initial.direccion)} className={inputCls} />

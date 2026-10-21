@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CambiarEstado, CopiarEnlace, FechaEntrega } from "@/components/pedido-acciones";
+import { CambiarEstado, CopiarEnlace, EnviarWA, FechaEntrega } from "@/components/pedido-acciones";
 import { requireRole } from "@/lib/auth";
 import {
   BADGE_ESTADO,
@@ -20,6 +20,7 @@ import { btnGhost, btnPrimary, card } from "@/lib/ui";
 import { uuid } from "@/lib/validation";
 import { dinero } from "@/lib/ventas";
 import { mensajeListo, mensajeRecibo, waLink } from "@/lib/whatsapp";
+import { whatsappConfigurado } from "@/lib/whatsapp-api";
 
 export const metadata = { title: "Pedido · Óptica Pérez" };
 
@@ -54,6 +55,7 @@ export default async function PedidoPage({ params }: PageProps<"/dashboard/pedid
   // WhatsApp manual: el recibo (primer mensaje) y el aviso de "listo para recibir" (segundo mensaje).
   const wa1 = enlace ? waLink(d.telefono, mensajeRecibo({ nombre: nombrePila, numero: d.numero, link: enlace })) : null;
   const wa2 = enlace ? waLink(d.telefono, mensajeListo({ nombre: nombrePila, numero: d.numero, link: enlace, saldo: d.saldo ?? 0 })) : null;
+  const auto = whatsappConfigurado();
   const listo = d.estado === "listo_para_recibir";
   const entregado = d.estado === "entregado";
   const antesDeListo = idx < indiceEstado("listo_para_recibir");
@@ -111,6 +113,8 @@ export default async function PedidoPage({ params }: PageProps<"/dashboard/pedid
           {listo && <p className="rounded-xl bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-800">El pedido está listo: avisa al cliente para que pase a retirarlo.</p>}
           <div className="flex flex-wrap gap-2">
             {/* Un solo aviso a la vez: el que corresponde al momento del pedido */}
+            {auto && listo && <EnviarWA ordenId={d.id} tipo="pedido_listo" etiqueta="Avisar por WhatsApp: listo para recibir" destacado />}
+            {auto && antesDeListo && <EnviarWA ordenId={d.id} tipo="pedido_recibo" etiqueta="Reenviar recibo por WhatsApp" />}
             {listo && wa2 && (
               <a href={wa2} target="_blank" rel="noopener noreferrer" className={`${btnPrimary} !bg-emerald-600 hover:!bg-emerald-700`}>Avisar: listo para recibir</a>
             )}
@@ -123,7 +127,7 @@ export default async function PedidoPage({ params }: PageProps<"/dashboard/pedid
             <p className="mb-1 text-xs text-brand-dark/60">Enlace de seguimiento del cliente (es exclusivo de este pedido; no necesita cuenta):</p>
             <CopiarEnlace enlace={enlace} />
           </div>
-          <p className="text-xs text-brand-dark/60">Los botones abren WhatsApp con el mensaje ya escrito; solo pulsa enviar.</p>
+          <p className="text-xs text-brand-dark/60">{auto ? "Los botones verdes envían el mensaje solos; los de abajo abren WhatsApp con el texto escrito (respaldo manual)." : "Los botones abren WhatsApp con el mensaje ya escrito; solo pulsa enviar."}</p>
         </section>
       )}
 

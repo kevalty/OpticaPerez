@@ -50,6 +50,7 @@ export const patientSchema = z
       z.number("La edad debe ser un número").int("La edad debe ser un número entero").min(0, "Edad no válida").max(130, "Edad no válida").nullable(),
     ),
     ocupacion: optionalText(120),
+    acepta_whatsapp: z.preprocess((v) => v === "on" || v === "true", z.boolean()),
   })
   .superRefine((p, ctx) => {
     if (p.tipo_documento === "cedula" && !isValidCedulaEC(p.documento)) {

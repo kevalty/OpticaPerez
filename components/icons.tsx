@@ -57,6 +57,12 @@ const ICONOS: Record<string, React.ReactNode> = {
 };
 
 ICONOS.productos = ICONOS.inventario;
+ICONOS.whatsapp = (
+  <>
+    <path d="M4 20l1.2-4.1A8 8 0 1 1 8.2 19z" />
+    <path d="M9 9.2c.3 2.3 2.5 4.5 5 5.4l1.3-1.3-1.8-1-.9.7c-.8-.4-1.5-1.1-1.9-1.9l.7-.9-1-1.8z" />
+  </>
+);
 
 export function Icono({ id, className = "size-6" }: { id: string; className?: string }) {
   return (
