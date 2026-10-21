@@ -31,7 +31,7 @@ export async function crearProducto(_prev: FormState, formData: FormData): Promi
   }
   // El stock inicial entra como movimiento, para que quede en el historial.
   if (stock > 0 && datos.controla_stock) {
-    const r = await supabase.rpc("ajustar_stock", { p_producto: data.id, p_delta: stock });
+    const r = await supabase.rpc("ajustar_stock", { p_producto: data.id, p_delta: stock, p_nota: "Stock inicial" });
     if (r.error) console.error("stock inicial fallo:", r.error.code);
   }
   revalidatePath(LISTA);
@@ -63,13 +63,17 @@ export async function ajustarStock(id: string, _prev: FormState, formData: FormD
   if (!Number.isInteger(delta) || delta === 0) return { error: "Escribe una cantidad entera distinta de cero (negativa para descontar)." };
 
   const supabase = await createClient();
-  const { error } = await supabase.rpc("ajustar_stock", { p_producto: id, p_delta: delta });
+  const nota = String(formData.get("nota") ?? "").trim().slice(0, 200);
+  if (nota.length < 3) return { error: "Escribe el motivo del ajuste (por ejemplo: compra, merma, conteo)." };
+  const { error } = await supabase.rpc("ajustar_stock", { p_producto: id, p_delta: delta, p_nota: nota });
   if (error) {
     console.error("ajustarStock fallo:", error.code);
+    if (error.code === "PGRST202") return { error: "Falta actualizar la base de datos (migración 0015). Avisa al administrador." };
     return { error: error.code === "P0001" ? error.message : "No se pudo ajustar el stock." };
   }
   revalidatePath(LISTA);
   revalidatePath(`${LISTA}/${id}`);
+  revalidatePath("/dashboard/inventario");
   return {};
 }
 

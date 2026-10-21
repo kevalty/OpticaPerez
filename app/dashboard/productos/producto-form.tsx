@@ -96,6 +96,10 @@ export function AjusteStockForm({ action, stock }: { action: (prev: FormState, f
         Entrada (+) o salida (−)
         <input name="delta" type="number" step="1" required placeholder="Ej. 10 o -2" className={`${inputCls} !w-40`} />
       </label>
+      <label className="flex min-w-48 flex-1 flex-col gap-1 text-sm font-medium text-brand">
+        Motivo *
+        <input name="nota" required minLength={3} maxLength={200} placeholder="Ej. compra, merma, conteo" autoComplete="off" className={inputCls} />
+      </label>
       <button disabled={pending} className={btnGhost}>{pending ? "Guardando…" : "Ajustar stock"}</button>
       {state.error && <p role="alert" className="w-full text-sm text-red-700">{state.error}</p>}
     </form>
