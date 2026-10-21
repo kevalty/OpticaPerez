@@ -86,7 +86,7 @@ export default async function WhatsAppPage({ searchParams }: PageProps<"/dashboa
                     {fechaHoraLocal(h.created_at)}
                     <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${h.estado === "enviado" ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-700"}`}>{h.estado === "enviado" ? "Enviado" : "Falló"}</span>
                   </span>
-                  {h.error && <span className="w-full text-xs text-red-700">{h.error}</span>}
+                  {h.error && <span className="w-full text-xs text-red-700">{/Vercel/.test(h.error) ? "La conexión con WhatsApp venció. Avisa al administrador para renovarla." : h.error}</span>}
                 </li>
               ))}
             </ul>
