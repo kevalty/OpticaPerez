@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { cambiarEstadoPedido, guardarEntrega, type EstadoPedidoForm } from "@/app/dashboard/pedidos/actions";
 import { btnGhost, btnPrimary, inputCls } from "@/lib/ui";
 
@@ -59,7 +59,7 @@ export function CambiarEstado({
               <button type="button" onClick={() => setConfirmando(false)} className={btnGhost}>No</button>
             </>
           ) : (
-            <button type="button" onClick={() => setConfirmando(true)} className="text-sm text-brand-dark/60 hover:underline">Corregir: volver un paso (administrador)</button>
+            <button type="button" onClick={() => setConfirmando(true)} className={`${btnGhost} w-fit`}>↩ Corregir: volver un paso (administrador)</button>
           )}
         </form>
       )}
@@ -72,6 +72,12 @@ export function FechaEntrega({ ordenId, valor }: { ordenId: string; valor: strin
   const [st, action, pend] = useActionState(guardarEntrega.bind(null, ordenId), {} as EstadoPedidoForm);
   const [descartado, setDescartado] = useState<EstadoPedidoForm | null>(null);
   const visible = st !== descartado;
+  // "Guardada." se quita solo a los pocos segundos.
+  useEffect(() => {
+    if (!st.ok) return;
+    const t = setTimeout(() => setDescartado(st), 4000);
+    return () => clearTimeout(t);
+  }, [st]);
   return (
     <form action={action} onInput={() => setDescartado(st)} className="flex flex-wrap items-end gap-2">
       <label className="flex flex-col gap-1 text-sm font-medium text-brand">
