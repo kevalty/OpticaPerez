@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Miniatura } from "@/components/miniatura";
+import { versionFoto } from "@/lib/fotos";
 import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { btnGhost, btnPrimary, card, inputCls } from "@/lib/ui";
@@ -90,9 +91,9 @@ export default async function InventarioPage({ searchParams }: PageProps<"/dashb
             return (
               <div key={p.id} className="flex min-h-14 flex-wrap items-center justify-between gap-x-4 gap-y-1 px-5 py-3">
                 <span className="flex min-w-0 items-center gap-3">
-                  <Miniatura id={p.id} tiene={Boolean(p.foto_path)} className="size-14" />
+                  <Miniatura id={p.id} version={versionFoto(p.foto_path)} className="size-14" />
                   <span className="min-w-0">
-                    <Link href={`/dashboard/inventario/movimientos?producto=${p.id}`} className="block font-medium text-brand hover:underline">{p.nombre}</Link>
+                    <Link href={`/dashboard/inventario/movimientos?producto=${p.id}`} className="block font-medium text-brand underline decoration-brand/30 underline-offset-2">{p.nombre}</Link>
                     <span className="text-xs text-brand-dark/60">{tipoLabel(p.tipo)}{p.codigo ? ` · ${p.codigo}` : ""}</span>
                   </span>
                 </span>

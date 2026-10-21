@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Miniatura } from "@/components/miniatura";
+import { versionFoto } from "@/lib/fotos";
 import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { btnGhost, btnPrimary, card, inputCls } from "@/lib/ui";
@@ -51,7 +52,7 @@ export default async function ProductosPage({ searchParams }: PageProps<"/dashbo
             return (
               <Link key={p.id} href={`/dashboard/productos/${p.id}`} className="flex min-h-14 flex-wrap items-center justify-between gap-x-4 gap-y-1 px-5 py-3 hover:bg-iris-light/50 focus-visible:bg-iris-light">
                 <span className="flex min-w-0 items-center gap-3">
-                  <Miniatura id={p.id} tiene={Boolean(p.foto_path)} className="size-12" />
+                  <Miniatura id={p.id} version={versionFoto(p.foto_path)} className="size-12" />
                   <span>
                   <span className="font-medium text-brand">{p.nombre}</span>
                   <span className="ml-2 text-xs text-brand-dark/60">{tipoLabel(p.tipo)}{p.codigo ? ` · ${p.codigo}` : ""}</span>

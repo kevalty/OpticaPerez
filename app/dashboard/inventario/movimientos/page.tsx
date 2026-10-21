@@ -42,7 +42,7 @@ export default async function MovimientosPage({ searchParams }: PageProps<"/dash
                   <strong className="text-brand">{m.producto}</strong>
                   <span className="text-brand-dark/70">
                     {m.venta_id && m.venta_numero != null
-                      ? <>{m.tipo === "salida" ? "Venta" : "Anulación de venta"} {esAdmin ? <Link href={`/dashboard/ventas/${m.venta_id}`} className="text-iris hover:underline">N.º {String(m.venta_numero).padStart(6, "0")}</Link> : `N.º ${String(m.venta_numero).padStart(6, "0")}`}</>
+                      ? <>{m.tipo === "salida" ? "Venta" : "Anulación de venta"} {esAdmin ? <Link href={`/dashboard/ventas/${m.venta_id}`} className="text-iris underline">N.º {String(m.venta_numero).padStart(6, "0")}</Link> : `N.º ${String(m.venta_numero).padStart(6, "0")}`}</>
                       : m.nota ?? "Ajuste manual"}
                   </span>
                 </span>

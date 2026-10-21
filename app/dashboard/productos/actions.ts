@@ -68,10 +68,13 @@ export async function crearProducto(_prev: FormState, formData: FormData): Promi
     if (r.error) console.error("stock inicial fallo:", r.error.code);
   }
   const errFoto = await guardarFoto(supabase, data.id, formData.get("foto"));
+  const otro = formData.get("otro") === "1";
   revalidatePath(LISTA);
   revalidatePath("/dashboard/inventario");
   // El producto ya existe: si la foto fallo, se lleva a su pantalla para reintentar.
   if (errFoto) redirect(`${LISTA}/${data.id}?aviso=foto`);
+  // «Guardar y crear otro»: vuelve al formulario con el mismo tipo, para cargar varios productos seguidos.
+  if (otro) redirect(`${LISTA}/nuevo?ok=creado&tipo=${datos.tipo}`);
   redirect(`${LISTA}?ok=creado`);
 }
 

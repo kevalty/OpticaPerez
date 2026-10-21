@@ -85,14 +85,15 @@ export function ProductoForm({
           </label>
         )}
       </div>
-      <label className="flex min-h-11 items-center gap-3 text-sm font-medium text-brand">
-        <input type="checkbox" name="controla_stock" checked={controla} disabled={tipo === "servicio"} onChange={(e) => setControla(e.target.checked)} className="size-5 accent-[#262d7a]" />
+      <label className="flex min-h-12 items-center gap-3 text-sm font-medium text-brand">
+        <input type="checkbox" name="controla_stock" checked={controla} disabled={tipo === "servicio"} onChange={(e) => setControla(e.target.checked)} className="size-6 accent-[#262d7a]" />
         Controla stock (desmárcalo para lentes que se mandan a hacer)
       </label>
 
       {state.error && <p ref={errorRef} role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{state.error}</p>}
       <div className="sticky bottom-16 z-10 flex gap-3 rounded-xl bg-white/90 py-2 backdrop-blur sm:static sm:bg-transparent sm:py-0">
         <button disabled={pending} className={`${btnPrimary} !min-h-12 flex-1 sm:flex-none`}>{pending ? "Guardando…" : submitLabel}</button>
+        {nuevo && <button name="otro" value="1" disabled={pending} className={`${btnGhost} !min-h-12 flex-1 sm:flex-none`}>Guardar y crear otro</button>}
         <Link href="/dashboard/productos" className={`${btnGhost} !min-h-12`}>Cancelar</Link>
       </div>
     </form>
