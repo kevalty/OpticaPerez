@@ -4,19 +4,21 @@ import { ConfirmButton } from "@/components/confirm-button";
 import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { card } from "@/lib/ui";
+import { urlFotoProducto } from "@/lib/fotos";
 import { uuid } from "@/lib/validation";
 import { actualizarProducto, ajustarStock, archivarProducto } from "../actions";
 import { AjusteStockForm, ProductoForm } from "../producto-form";
 
 export const metadata = { title: "Producto · Óptica Pérez" };
 
-export default async function ProductoPage({ params }: PageProps<"/dashboard/productos/[id]">) {
+export default async function ProductoPage({ params, searchParams }: PageProps<"/dashboard/productos/[id]">) {
   await requireRole("administrador");
   const { id } = await params;
+  const sp = await searchParams;
   if (!uuid.safeParse(id).success) notFound();
 
   const supabase = await createClient();
-  const { data: p } = await supabase.from("products").select("id, nombre, tipo, codigo, precio, stock, stock_minimo, controla_stock").eq("id", id).is("deleted_at", null).maybeSingle();
+  const { data: p } = await supabase.from("products").select("id, nombre, tipo, codigo, precio, stock, stock_minimo, controla_stock, foto_path").eq("id", id).is("deleted_at", null).maybeSingle();
   if (!p) notFound();
 
   return (
@@ -25,7 +27,8 @@ export default async function ProductoPage({ params }: PageProps<"/dashboard/pro
         <Link href="/dashboard/productos" className="inline-flex min-h-11 items-center text-sm text-iris hover:underline">← Productos</Link>
         <h1 className="text-2xl font-semibold text-brand">{p.nombre}</h1>
       </div>
-      <ProductoForm action={actualizarProducto.bind(null, id)} initial={p} submitLabel="Guardar cambios" />
+      {sp.aviso === "foto" && <p role="alert" className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">El producto se creó, pero la foto no se pudo subir. Vuelve a intentarlo aquí abajo.</p>}
+      <ProductoForm action={actualizarProducto.bind(null, id)} initial={p} submitLabel="Guardar cambios" fotoActual={p.foto_path ? urlFotoProducto(id) : null} />
 
       {p.controla_stock && (
         <section className={`${card} max-w-xl`}>

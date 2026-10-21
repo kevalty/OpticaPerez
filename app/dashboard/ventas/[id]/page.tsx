@@ -8,6 +8,7 @@ import { btnGhost, btnPrimary, card } from "@/lib/ui";
 import { uuid } from "@/lib/validation";
 import { estadoInfo, fechaCorta } from "@/lib/pedidos";
 import { enlaceSeguimiento, siteUrl } from "@/lib/site";
+import { urlFotoVenta } from "@/lib/fotos";
 import { dinero, metodoLabel } from "@/lib/ventas";
 import { mensajeRecibo, waLink } from "@/lib/whatsapp";
 
@@ -17,7 +18,7 @@ type Venta = {
   id: string; numero: number; fecha: string; subtotal: number; descuento: number; total: number; pagado: number; estado: string;
   observaciones: string | null; anulada_motivo: string | null; vendedor_id: string; patient_id: string | null;
   patients: { nombre: string; documento: string | null; telefono: string | null } | null;
-  sale_items: { id: string; nombre: string | null; cantidad: number; precio_unitario: number; descuento: number }[];
+  sale_items: { id: string; foto_path: string | null; nombre: string | null; cantidad: number; precio_unitario: number; descuento: number }[];
   sale_payments: { id: string; monto: number; metodo: string; nota: string | null; fecha: string }[];
   orders: { id: string; estado: string; fecha_entrega: string | null; token: string; deleted_at: string | null }[];
 };
@@ -33,7 +34,7 @@ export default async function VentaPage({ params, searchParams }: PageProps<"/da
   const { data, error } = await supabase
     .from("sales")
     .select(
-      "id, numero, fecha, subtotal, descuento, total, pagado, estado, observaciones, anulada_motivo, vendedor_id, patient_id, patients(nombre, documento, telefono), sale_items(id, nombre, cantidad, precio_unitario, descuento), sale_payments(id, monto, metodo, nota, fecha), orders(id, estado, fecha_entrega, token, deleted_at)",
+      "id, numero, fecha, subtotal, descuento, total, pagado, estado, observaciones, anulada_motivo, vendedor_id, patient_id, patients(nombre, documento, telefono), sale_items(id, foto_path, nombre, cantidad, precio_unitario, descuento), sale_payments(id, monto, metodo, nota, fecha), orders(id, estado, fecha_entrega, token, deleted_at)",
     )
     .eq("id", id)
     .is("deleted_at", null)
@@ -111,13 +112,24 @@ export default async function VentaPage({ params, searchParams }: PageProps<"/da
 
       <section className={card}>
         <h2 className="mb-2 font-semibold text-brand">Detalle</h2>
+        {v.sale_items.some((i) => i.foto_path) && <p className="mb-2 text-xs text-brand-dark/60">La foto de cada producto quedó guardada con esta venta como evidencia de lo que se llevó el cliente.</p>}
         <div className="overflow-x-auto">
           <table className="w-full min-w-[28rem] text-left text-sm">
             <thead><tr className="text-xs uppercase tracking-wide text-brand-dark/50"><th className="py-1 pr-2 font-medium">Producto</th><th className="py-1 pr-2 font-medium">Cant.</th><th className="py-1 pr-2 text-right font-medium">P. unit.</th><th className="py-1 pr-2 text-right font-medium">Desc.</th><th className="py-1 text-right font-medium">Total</th></tr></thead>
             <tbody className="divide-y divide-brand/10">
               {v.sale_items.map((i) => (
                 <tr key={i.id}>
-                  <td className="py-1.5 pr-2 text-brand">{i.nombre ?? "Producto"}</td>
+                  <td className="py-1.5 pr-2 text-brand">
+                    <span className="flex items-center gap-2">
+                      {i.foto_path && (
+                        <a href={urlFotoVenta(i.id)} target="_blank" rel="noopener noreferrer" aria-label="Ver la foto completa de lo entregado" className="shrink-0">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={urlFotoVenta(i.id)} alt="" loading="lazy" className="size-12 rounded-lg object-cover ring-1 ring-brand/10" />
+                        </a>
+                      )}
+                      {i.nombre ?? "Producto"}
+                    </span>
+                  </td>
                   <td className="py-1.5 pr-2">{i.cantidad}</td>
                   <td className="py-1.5 pr-2 text-right">{dinero(i.precio_unitario)}</td>
                   <td className="py-1.5 pr-2 text-right">{i.descuento > 0 ? `− ${dinero(i.descuento)}` : "—"}</td>

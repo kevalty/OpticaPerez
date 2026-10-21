@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useActionState, useEffect, useRef, useState } from "react";
+import { FotoCampo } from "@/components/foto-campo";
 import { TIPOS_PRODUCTO } from "@/lib/ventas";
 import { btnGhost, btnPrimary, inputCls } from "@/lib/ui";
 import type { FormState } from "@/lib/validation";
@@ -13,12 +14,15 @@ export function ProductoForm({
   initial = {},
   nuevo,
   submitLabel,
+  fotoActual,
 }: {
   action: (prev: FormState, formData: FormData) => Promise<FormState>;
   initial?: Inicial;
   nuevo?: boolean;
   submitLabel: string;
+  fotoActual?: string | null;
 }) {
+  const [foto, setFoto] = useState<File | null>(null);
   const [state, formAction, pending] = useActionState(action, {} as FormState);
   const errorRef = useRef<HTMLParagraphElement>(null);
   const v = (c: string, ini: string | number | null | undefined) => state.values?.[c] ?? String(ini ?? "");
@@ -29,7 +33,14 @@ export function ProductoForm({
   }, [state]);
 
   return (
-    <form action={formAction} className="flex max-w-xl flex-col gap-4">
+    <form
+      action={(fd) => {
+        if (foto) fd.set("foto", foto); // la foto ya viene reducida desde el celular
+        formAction(fd);
+      }}
+      className="flex max-w-xl flex-col gap-4"
+    >
+      <FotoCampo actual={fotoActual} onChange={setFoto} />
       <label className="flex flex-col gap-1 text-sm font-medium text-brand">
         Nombre *
         <input name="nombre" required maxLength={200} defaultValue={v("nombre", initial.nombre)} autoComplete="off" className={inputCls} />
@@ -80,9 +91,9 @@ export function ProductoForm({
       </label>
 
       {state.error && <p ref={errorRef} role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{state.error}</p>}
-      <div className="flex gap-3">
-        <button disabled={pending} className={btnPrimary}>{pending ? "Guardando…" : submitLabel}</button>
-        <Link href="/dashboard/productos" className={btnGhost}>Cancelar</Link>
+      <div className="sticky bottom-16 z-10 flex gap-3 rounded-xl bg-white/90 py-2 backdrop-blur sm:static sm:bg-transparent sm:py-0">
+        <button disabled={pending} className={`${btnPrimary} !min-h-12 flex-1 sm:flex-none`}>{pending ? "Guardando…" : submitLabel}</button>
+        <Link href="/dashboard/productos" className={`${btnGhost} !min-h-12`}>Cancelar</Link>
       </div>
     </form>
   );
@@ -95,6 +106,10 @@ export function AjusteStockForm({ action, stock }: { action: (prev: FormState, f
       <label className="flex flex-col gap-1 text-sm font-medium text-brand">
         Entrada (+) o salida (−)
         <input name="delta" type="number" step="1" required placeholder="Ej. 10 o -2" className={`${inputCls} !w-40`} />
+      </label>
+      <label className="flex min-w-48 flex-1 flex-col gap-1 text-sm font-medium text-brand">
+        Motivo *
+        <input name="nota" required minLength={3} maxLength={200} placeholder="Ej. compra, merma, conteo" autoComplete="off" className={inputCls} />
       </label>
       <button disabled={pending} className={btnGhost}>{pending ? "Guardando…" : "Ajustar stock"}</button>
       {state.error && <p role="alert" className="w-full text-sm text-red-700">{state.error}</p>}
