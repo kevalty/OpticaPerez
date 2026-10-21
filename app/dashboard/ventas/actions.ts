@@ -38,7 +38,7 @@ export async function crearVenta(input: unknown): Promise<{ error: string }> {
   if (creada.order_id) {
     const user = await requireRole("recepcionista", "administrador");
     const r = await enviarMensajePedido(supabase, user.id, creada.order_id, "pedido_recibo", true);
-    wa = r.ok ? "&wa=ok" : "&wa=no";
+    wa = r.ok ? "&wa=ok" : r.motivo === "permiso" ? "&wa=permiso" : "&wa=no";
   }
   redirect(`/dashboard/ventas/${creada.sale_id}?ok=venta${wa}`);
 }

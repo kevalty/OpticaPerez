@@ -32,7 +32,7 @@ export default async function PacientePage({ params, searchParams }: PageProps<"
   const supabase = await createClient();
   const { data: p, error: errorPaciente } = await supabase
     .from("patients")
-    .select("id, nombre, tipo_documento, documento, direccion, telefono, email, edad, ocupacion, fecha_registro")
+    .select("id, nombre, tipo_documento, documento, direccion, telefono, email, edad, ocupacion, fecha_registro, acepta_whatsapp")
     .eq("id", id)
     .is("deleted_at", null)
     .maybeSingle();
@@ -66,6 +66,7 @@ export default async function PacientePage({ params, searchParams }: PageProps<"
   const datos: [string, string | number | null][] = [
     [p.tipo_documento === "pasaporte" ? "Pasaporte" : "Cédula", p.documento],
     ["Celular", p.telefono],
+    ["Acepta WhatsApp", p.acepta_whatsapp === false ? "No" : "Sí"],
     ["Correo", p.email],
     ["Edad", p.edad != null ? `${p.edad} años` : null],
     ["Ocupación", p.ocupacion],

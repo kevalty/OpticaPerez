@@ -27,6 +27,7 @@ export function CambiarEstado({
   const pideConfirmar = siguiente?.id === "entregado" && saldoPendiente > 0 && puedeRetroceder;
   const error = stAvanzar.error ?? stAtras.error;
   const aviso = stAvanzar.aviso;
+  const avisoFallo = stAvanzar.avisoFallo;
 
   return (
     <div className="flex flex-col gap-2">
@@ -66,7 +67,7 @@ export function CambiarEstado({
         </form>
       )}
       {error && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-      {!error && aviso && <p role="status" className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">{aviso}</p>}
+      {!error && aviso && <p role={avisoFallo ? "alert" : "status"} className={`rounded-lg px-3 py-2 text-sm ${avisoFallo ? "bg-amber-50 text-amber-800" : "bg-emerald-50 text-emerald-800"}`}>{aviso}</p>}
     </div>
   );
 }

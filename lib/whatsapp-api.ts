@@ -15,7 +15,7 @@ function mensajeError(codigo: number | undefined, texto: string | undefined): st
     case 102:
     case 463:
     case 467:
-      return "El token de WhatsApp venció o no es válido. Genera uno nuevo en Meta y actualízalo en Vercel (WHATSAPP_TOKEN).";
+      return "La conexión con WhatsApp venció. Avisa al administrador para renovarla.";
     case 131030:
       return "Ese número no está en la lista de destinatarios de prueba de Meta (modo de prueba).";
     case 132001:

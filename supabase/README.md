@@ -21,6 +21,7 @@ Aplica en orden, una vez cada una, en el SQL Editor:
 - `0011_estados_pedido.sql` (Semana 5: nuevos estados del pedido; **ejecutarla sola**, antes de la 0012).
 - `0012_pedidos.sql` (Semana 5: seguimiento de pedidos, historial, token exclusivo y enlace publico para el cliente; mapea los pedidos viejos a los estados nuevos).
 - `0013_whatsapp.sql` (Semana 6: consentimiento `acepta_whatsapp`, plantillas, historial de envíos y recordatorios pendientes).
+- `0014_whatsapp_textos.sql` (Semana 6: descripciones de plantillas con tildes).
 
 ## Datos del doctor que salen en el certificado
 El nombre y el registro del Ministerio de Salud Publica se imprimen bajo la firma. Hasta que exista la
