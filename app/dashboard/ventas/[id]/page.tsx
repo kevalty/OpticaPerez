@@ -60,6 +60,12 @@ export default async function VentaPage({ params, searchParams }: PageProps<"/da
     orden && v.patients
       ? waLink(v.patients.telefono, mensajeRecibo({ nombre: v.patients.nombre.trim().split(" ")[0], numero: v.numero, link: enlaceSeguimiento(await siteUrl(), orden.token) }))
       : null;
+  // Motivo del ultimo intento fallido (el recibo automatico), para explicarlo en el aviso ambar.
+  let motivoWA: string | null = null;
+  if (sp.wa === "no") {
+    const { data: ult } = await supabase.from("whatsapp_envios").select("error").eq("sale_id", id).eq("estado", "fallido").order("created_at", { ascending: false }).limit(1);
+    motivoWA = ult?.[0]?.error ?? null;
+  }
   const pagos = [...v.sale_payments].sort((a, b) => a.fecha.localeCompare(b.fecha));
 
   return (
@@ -80,7 +86,7 @@ export default async function VentaPage({ params, searchParams }: PageProps<"/da
       {sp.ok === "venta" && <p role="status" className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">Venta registrada. Ya puedes imprimir el comprobante{orden ? " y la orden de trabajo" : ""}.</p>}
       {sp.wa === "ok" && <p role="status" className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">Se envió el recibo por WhatsApp al cliente.</p>}
       {sp.wa === "permiso" && <p role="alert" className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">El paciente no aceptó recibir WhatsApp, por eso no se envió el recibo. Puedes activarlo en «Editar datos» del paciente.</p>}
-      {sp.wa === "no" && <p role="alert" className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">No se pudo enviar el recibo automático por WhatsApp. Puedes enviarlo con el botón de abajo; el intento quedó en el historial.</p>}
+      {sp.wa === "no" && <p role="alert" className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">No se pudo enviar el recibo automático por WhatsApp. Puedes enviarlo con el botón de abajo; el intento quedó en el historial.{motivoWA && <> Motivo: {motivoWA}</>}</p>}
       {orden && !anulada && sp.wa !== "ok" && sp.wa !== "permiso" && (
         <section className="flex flex-col gap-2 rounded-2xl bg-emerald-50 p-4 ring-1 ring-emerald-200 print:hidden">
           <p className="text-sm font-semibold text-emerald-900">Envía el recibo al cliente por WhatsApp</p>
