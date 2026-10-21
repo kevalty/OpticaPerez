@@ -55,6 +55,8 @@ export default async function PedidoPage({ params }: PageProps<"/dashboard/pedid
   const wa1 = enlace ? waLink(d.telefono, mensajeRecibo({ nombre: nombrePila, numero: d.numero, link: enlace })) : null;
   const wa2 = enlace ? waLink(d.telefono, mensajeListo({ nombre: nombrePila, numero: d.numero, link: enlace, saldo: d.saldo ?? 0 })) : null;
   const listo = d.estado === "listo_para_recibir";
+  const entregado = d.estado === "entregado";
+  const antesDeListo = idx < indiceEstado("listo_para_recibir");
   const ultimaFecha = (est: string) => [...d.historial].reverse().find((h) => h.estado === est);
 
   return (
@@ -90,31 +92,31 @@ export default async function PedidoPage({ params }: PageProps<"/dashboard/pedid
               siguiente={siguienteEstado(d.estado) ? { id: siguienteEstado(d.estado)!.id, label: siguienteEstado(d.estado)!.label } : null}
               anterior={anteriorEstado(d.estado) ? { id: anteriorEstado(d.estado)!.id, label: anteriorEstado(d.estado)!.label } : null}
               puedeRetroceder={user.rol === "administrador"}
+              saldoPendiente={d.saldo ?? 0}
             />
             {d.estado === "listo_para_recibir" && d.saldo != null && d.saldo > 0 && (
-              <p className="mt-2 text-sm text-amber-700">
-                Para entregar hay que cobrar el saldo de {dinero(d.saldo)}.{" "}
-                <Link href={`/dashboard/ventas/${d.sale_id}#abono`} className="font-semibold underline">Cobrar saldo</Link>
-              </p>
+              <div className="mt-3 flex flex-wrap items-center gap-3 rounded-xl bg-amber-50 px-4 py-3">
+                <p className="text-sm text-amber-800">Para entregar hay que cobrar el saldo de <strong>{dinero(d.saldo)}</strong>.</p>
+                <Link href={`/dashboard/ventas/${d.sale_id}#abono`} className={btnPrimary}>Cobrar saldo</Link>
+              </div>
             )}
           </div>
         )}
       </section>
 
       {/* Aviso al cliente */}
-      {puedeActuar && enlace && (
+      {puedeActuar && enlace && !entregado && (
         <section className={`${card} flex flex-col gap-3`}>
           <h2 className="font-semibold text-brand">Aviso al cliente por WhatsApp</h2>
           {listo && <p className="rounded-xl bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-800">El pedido está listo: avisa al cliente para que pase a retirarlo.</p>}
           <div className="flex flex-wrap gap-2">
-            {wa2 ? (
-              <a href={wa2} target="_blank" rel="noopener noreferrer" className={listo ? `${btnPrimary} !bg-emerald-600 hover:!bg-emerald-700` : btnGhost}>
-                Avisar: listo para recibir
-              </a>
-            ) : null}
-            {wa1 ? (
-              <a href={wa1} target="_blank" rel="noopener noreferrer" className={btnGhost}>Enviar recibo (enviado a hacer)</a>
-            ) : null}
+            {/* Un solo aviso a la vez: el que corresponde al momento del pedido */}
+            {listo && wa2 && (
+              <a href={wa2} target="_blank" rel="noopener noreferrer" className={`${btnPrimary} !bg-emerald-600 hover:!bg-emerald-700`}>Avisar: listo para recibir</a>
+            )}
+            {antesDeListo && wa1 && (
+              <a href={wa1} target="_blank" rel="noopener noreferrer" className={btnGhost}>Reenviar recibo (enviado a hacer)</a>
+            )}
             {!wa1 && <p className="text-sm text-amber-700">El paciente no tiene un celular válido para WhatsApp.</p>}
           </div>
           <div>
@@ -146,8 +148,8 @@ export default async function PedidoPage({ params }: PageProps<"/dashboard/pedid
           {d.saldo != null && <div><dt className="text-xs uppercase tracking-wide text-brand-dark/50">Saldo pendiente</dt><dd className={d.saldo > 0 ? "font-semibold text-amber-700" : "text-emerald-700"}>{dinero(d.saldo)}</dd></div>}
           <div><dt className="text-xs uppercase tracking-wide text-brand-dark/50">Venta</dt><dd>{user.rol === "doctor" ? "—" : <Link href={`/dashboard/ventas/${d.sale_id}`} className="text-iris hover:underline">Ver venta</Link>}</dd></div>
         </dl>
-        {puedeActuar && <FechaEntrega ordenId={d.id} valor={d.fecha_entrega} />}
-        {!puedeActuar && d.fecha_entrega && <p className="text-sm">Entrega estimada: <strong>{fechaCorta(d.fecha_entrega)}</strong></p>}
+        {puedeActuar && !entregado && <FechaEntrega ordenId={d.id} valor={d.fecha_entrega} />}
+        {(!puedeActuar || entregado) && d.fecha_entrega && <p className="text-sm">Entrega estimada: <strong>{fechaCorta(d.fecha_entrega)}</strong></p>}
       </section>
 
       <section className={card}>
@@ -155,7 +157,12 @@ export default async function PedidoPage({ params }: PageProps<"/dashboard/pedid
         <ul className="divide-y divide-brand/10 text-sm">
           {d.historial.map((h, k) => (
             <li key={k} className="flex flex-wrap justify-between gap-2 py-1.5">
-              <span className="font-medium">{estadoInfo(h.estado)?.label ?? h.estado}</span>
+              <span className="font-medium">
+                {estadoInfo(h.estado)?.label ?? h.estado}
+                {k > 0 && indiceEstado(h.estado) < indiceEstado(d.historial[k - 1].estado) && (
+                  <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">Corrección</span>
+                )}
+              </span>
               <span className="text-brand-dark/60">{fechaHoraLocal(h.fecha)} · {h.usuario ?? "—"}</span>
             </li>
           ))}

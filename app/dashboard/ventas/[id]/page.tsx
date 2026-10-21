@@ -39,6 +39,17 @@ export default async function VentaPage({ params, searchParams }: PageProps<"/da
     .is("deleted_at", null)
     .maybeSingle();
   if (error) console.error("venta fallo:", error.code);
+  if (error && !data) {
+    // Un error de la base (p. ej. migracion pendiente) no es "pagina no encontrada".
+    return (
+      <>
+        <Link href="/dashboard/ventas" className={btnGhost}>← Ventas</Link>
+        <p role="alert" className="max-w-xl rounded-xl bg-amber-50 px-4 py-3 text-sm text-brand">
+          No se pudo cargar la venta. Si el problema continúa, avisa al administrador (puede faltar actualizar la base de datos: migraciones 0011 y 0012).
+        </p>
+      </>
+    );
+  }
   if (!data) notFound();
   const v = data as unknown as Venta;
   const saldo = Math.round((v.total - v.pagado) * 100) / 100;
@@ -84,7 +95,7 @@ export default async function VentaPage({ params, searchParams }: PageProps<"/da
         <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-3">
           <div><dt className="text-xs uppercase tracking-wide text-brand-dark/50">Paciente</dt><dd>{v.patients ? <Link href={`/dashboard/pacientes/${v.patient_id}`} className="text-brand hover:underline">{v.patients.nombre}</Link> : "Venta de mostrador"}</dd></div>
           <div><dt className="text-xs uppercase tracking-wide text-brand-dark/50">Celular</dt><dd>{v.patients?.telefono ?? "—"}</dd></div>
-          <div><dt className="text-xs uppercase tracking-wide text-brand-dark/50">Orden de trabajo</dt><dd>{orden ? `${estadoInfo(orden.estado)?.label ?? orden.estado}${orden.fecha_entrega ? ` · entrega ${fechaCorta(orden.fecha_entrega)}` : ""}` : "No se generó"}</dd></div>
+          <div><dt className="text-xs uppercase tracking-wide text-brand-dark/50">Orden de trabajo</dt><dd>{orden ? `${estadoInfo(orden.estado)?.label ?? orden.estado}${orden.fecha_entrega ? ` · entrega ${fechaCorta(orden.fecha_entrega)}` : ""}` : (v.estado === "anulada" ? "Sin orden activa (la venta fue anulada)" : "No se generó")}</dd></div>
         </dl>
         {v.observaciones && <p className="mt-3 text-sm text-brand-dark/80">Observaciones: {v.observaciones}</p>}
       </section>

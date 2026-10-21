@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cache } from "react";
 import Image from "next/image";
 import { NEGOCIO } from "@/lib/negocio";
 import { ESTADOS_PEDIDO, SEDE_ENTREGA, estadoInfo, fechaCorta, indiceEstado, lineasEspecificaciones, type Especificaciones } from "@/lib/pedidos";
@@ -6,7 +7,6 @@ import { createClient } from "@/lib/supabase/server";
 import { dinero } from "@/lib/ventas";
 
 // Pagina publica del cliente: sin cuenta, solo con el token exclusivo de su pedido. No se indexa ni envia el enlace como referencia.
-export const metadata: Metadata = { title: "Seguimiento de tu pedido · Óptica Pérez", robots: { index: false, follow: false }, referrer: "no-referrer" };
 export const dynamic = "force-dynamic";
 
 type Seg = {
@@ -16,11 +16,26 @@ type Seg = {
   historial: { estado: string; fecha: string }[];
 };
 
-export default async function SeguimientoPage({ params }: PageProps<"/seguimiento/[token]">) {
-  const { token } = await params;
+const cargar = cache(async (token: string) => {
   const supabase = await createClient();
   const { data } = await supabase.rpc("seguimiento_publico", { p_token: token });
-  const s = data as Seg | null;
+  return data as Seg | null;
+});
+
+// El titulo de la pestana dice como va el pedido (util si el cliente guarda el enlace como favorito).
+export async function generateMetadata({ params }: PageProps<"/seguimiento/[token]">): Promise<Metadata> {
+  const { token } = await params;
+  const s = await cargar(token);
+  return {
+    title: s ? `${estadoInfo(s.estado)?.cliente ?? "Tu pedido"} · Óptica Pérez` : "Seguimiento de tu pedido · Óptica Pérez",
+    robots: { index: false, follow: false },
+    referrer: "no-referrer",
+  };
+}
+
+export default async function SeguimientoPage({ params }: PageProps<"/seguimiento/[token]">) {
+  const { token } = await params;
+  const s = await cargar(token);
   const sucursal = NEGOCIO.sucursales[0];
 
   if (!s) {
@@ -97,10 +112,26 @@ export default async function SeguimientoPage({ params }: PageProps<"/seguimient
         )}
       </section>
 
-      <section className="rounded-2xl bg-white p-5 text-sm ring-1 ring-brand/10">
-        <h2 className="mb-1 font-semibold text-brand">Retíralo en {SEDE_ENTREGA}</h2>
-        <ul className="text-brand-dark/80">{sucursal?.locales.map((l) => <li key={l}>{l}</li>)}</ul>
-      </section>
+      {s.estado !== "entregado" && (
+        <section className="rounded-2xl bg-white p-5 text-sm ring-1 ring-brand/10">
+          <h2 className="mb-2 font-semibold text-brand">Retíralo en {SEDE_ENTREGA}</h2>
+          <ul className="flex flex-col gap-3">
+            {sucursal?.locales.map((l) => {
+              const direccion = l.replace(/^Local \d+:\s*/, "").replace(/\s+-\s+.*$/, "");
+              const tel = l.match(/(\d[\d\s-]{6,}\d)\s*$/)?.[1];
+              return (
+                <li key={l} className="flex flex-col gap-2">
+                  <span className="text-brand-dark/80">{l}</span>
+                  <span className="flex flex-wrap gap-2">
+                    <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${direccion}, ${SEDE_ENTREGA}, Ecuador`)}`} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center rounded-lg border border-brand/20 px-4 font-medium text-brand hover:bg-iris-light">Cómo llegar</a>
+                    {tel && <a href={`tel:${tel.replace(/[\s-]/g, "")}`} className="inline-flex min-h-11 items-center rounded-lg border border-brand/20 px-4 font-medium text-brand hover:bg-iris-light">Llamar</a>}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
 
       <p className="pb-4 text-center text-xs text-brand-dark/50">{NEGOCIO.nombre} · en tus ojos desde 1977</p>
     </main>

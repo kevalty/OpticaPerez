@@ -3,6 +3,7 @@ import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { formatDateLong, horaLocal, isISODate, rangoDia, shiftDate, todayISO } from "@/lib/time";
 import { btnGhost, btnPrimary, card } from "@/lib/ui";
+import { fechaCorta } from "@/lib/pedidos";
 import { dinero } from "@/lib/ventas";
 
 export const metadata = { title: "Ventas · Óptica Pérez" };
@@ -95,7 +96,7 @@ export default async function VentasPage({ searchParams }: PageProps<"/dashboard
                   <span>
                     <span className="font-mono text-sm text-brand-dark/60">N.º {num(v.numero)}</span>
                     <span className="ml-3 font-medium text-brand">{v.patients?.nombre ?? "Mostrador"}</span>
-                    <span className="ml-2 text-xs text-brand-dark/60">{soloSaldo ? new Date(v.fecha).toLocaleDateString("es") : horaLocal(v.fecha)}</span>
+                    <span className="ml-2 text-xs text-brand-dark/60">{soloSaldo ? fechaCorta(v.fecha) : horaLocal(v.fecha)}</span>
                   </span>
                   <span className="flex items-center gap-3">
                     <span className="font-semibold text-brand">{dinero(v.total)}</span>
