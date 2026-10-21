@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Miniatura } from "@/components/miniatura";
 import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { btnGhost, btnPrimary, card, inputCls } from "@/lib/ui";
@@ -7,7 +8,7 @@ import { dinero, tipoLabel } from "@/lib/ventas";
 
 export const metadata = { title: "Productos · Óptica Pérez" };
 
-type P = { id: string; nombre: string; tipo: string; precio: number; stock: number; stock_minimo: number; controla_stock: boolean; codigo: string | null };
+type P = { id: string; nombre: string; tipo: string; precio: number; stock: number; stock_minimo: number; controla_stock: boolean; codigo: string | null; foto_path: string | null };
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 const AVISO: Record<string, string> = { creado: "Producto creado.", guardado: "Cambios guardados.", archivado: "Producto archivado." };
 
@@ -19,7 +20,7 @@ export default async function ProductosPage({ searchParams }: PageProps<"/dashbo
   const ok = AVISO[one(sp.ok) ?? ""];
 
   const supabase = await createClient();
-  let query = supabase.from("products").select("id, nombre, tipo, precio, stock, stock_minimo, controla_stock, codigo").is("deleted_at", null).order("tipo").order("nombre").limit(300);
+  let query = supabase.from("products").select("id, nombre, tipo, precio, stock, stock_minimo, controla_stock, codigo, foto_path").is("deleted_at", null).order("tipo").order("nombre").limit(300);
   if (q) query = query.or(`nombre.ilike.%${q}%,codigo.ilike.%${q}%`);
   const { data, error } = await query;
   const productos = (data ?? []) as P[];
@@ -49,9 +50,12 @@ export default async function ProductosPage({ searchParams }: PageProps<"/dashbo
             const bajo = p.controla_stock && p.stock <= p.stock_minimo;
             return (
               <Link key={p.id} href={`/dashboard/productos/${p.id}`} className="flex min-h-14 flex-wrap items-center justify-between gap-x-4 gap-y-1 px-5 py-3 hover:bg-iris-light/50 focus-visible:bg-iris-light">
-                <span>
+                <span className="flex min-w-0 items-center gap-3">
+                  <Miniatura id={p.id} tiene={Boolean(p.foto_path)} className="size-12" />
+                  <span>
                   <span className="font-medium text-brand">{p.nombre}</span>
                   <span className="ml-2 text-xs text-brand-dark/60">{tipoLabel(p.tipo)}{p.codigo ? ` · ${p.codigo}` : ""}</span>
+                  </span>
                 </span>
                 <span className="flex items-center gap-3 text-sm">
                   <span className="font-semibold text-brand">{dinero(p.precio)}</span>

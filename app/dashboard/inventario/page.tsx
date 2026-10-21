@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Miniatura } from "@/components/miniatura";
 import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { btnGhost, btnPrimary, card, inputCls } from "@/lib/ui";
@@ -7,7 +8,7 @@ import { TIPOS_PRODUCTO, tipoLabel } from "@/lib/ventas";
 
 export const metadata = { title: "Inventario · Óptica Pérez" };
 
-type P = { id: string; nombre: string; tipo: string; stock: number; stock_minimo: number; codigo: string | null };
+type P = { id: string; nombre: string; tipo: string; stock: number; stock_minimo: number; codigo: string | null; foto_path: string | null };
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 const FILTROS = [
   { id: "todos", titulo: "Todos" },
@@ -27,7 +28,7 @@ export default async function InventarioPage({ searchParams }: PageProps<"/dashb
   const supabase = await createClient();
   let query = supabase
     .from("products")
-    .select("id, nombre, tipo, stock, stock_minimo, codigo")
+    .select("id, nombre, tipo, stock, stock_minimo, codigo, foto_path")
     .is("deleted_at", null)
     .eq("controla_stock", true)
     .order("stock")
@@ -49,7 +50,8 @@ export default async function InventarioPage({ searchParams }: PageProps<"/dashb
         <h1 className="text-2xl font-semibold text-brand">Inventario</h1>
         <div className="flex flex-wrap gap-2">
           <Link href="/dashboard/inventario/movimientos" className={btnGhost}>Movimientos</Link>
-          {esAdmin && <Link href="/dashboard/productos" className={btnPrimary}>Productos y ajustes</Link>}
+          {esAdmin && <Link href="/dashboard/productos/nuevo" className={btnPrimary}>+ Agregar con foto</Link>}
+          {esAdmin && <Link href="/dashboard/productos" className={btnGhost}>Productos y ajustes</Link>}
         </div>
       </div>
 
@@ -87,9 +89,12 @@ export default async function InventarioPage({ searchParams }: PageProps<"/dashb
             const bajo = !agotado && p.stock <= p.stock_minimo;
             return (
               <div key={p.id} className="flex min-h-14 flex-wrap items-center justify-between gap-x-4 gap-y-1 px-5 py-3">
-                <span>
-                  <Link href={`/dashboard/inventario/movimientos?producto=${p.id}`} className="font-medium text-brand hover:underline">{p.nombre}</Link>
-                  <span className="ml-2 text-xs text-brand-dark/60">{tipoLabel(p.tipo)}{p.codigo ? ` · ${p.codigo}` : ""}</span>
+                <span className="flex min-w-0 items-center gap-3">
+                  <Miniatura id={p.id} tiene={Boolean(p.foto_path)} className="size-14" />
+                  <span className="min-w-0">
+                    <Link href={`/dashboard/inventario/movimientos?producto=${p.id}`} className="block font-medium text-brand hover:underline">{p.nombre}</Link>
+                    <span className="text-xs text-brand-dark/60">{tipoLabel(p.tipo)}{p.codigo ? ` · ${p.codigo}` : ""}</span>
+                  </span>
                 </span>
                 <span className="flex items-center gap-3 text-sm">
                   <span className="text-xs text-brand-dark/60">mínimo {p.stock_minimo}</span>

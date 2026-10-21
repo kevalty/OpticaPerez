@@ -1,5 +1,6 @@
 "use client";
 
+import { Miniatura } from "@/components/miniatura";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, useTransition } from "react";
 import { crearVenta } from "@/app/dashboard/ventas/actions";
 import { buscarPacientes } from "@/app/dashboard/pacientes/actions";
@@ -103,7 +104,7 @@ export function PosVenta({
         const max = l.controla_stock ? l.stock : 999;
         return ls.map((x, j) => (j === i ? { ...x, cantidad: Math.min(max, x.cantidad + 1) } : x));
       }
-      return [...ls, { product_id: p.id, nombre: p.nombre, tipo: p.tipo, precio: p.precio, cantidad: 1, descuento_pct: 0, stock: p.stock, controla_stock: p.controla_stock }];
+      return [...ls, { product_id: p.id, nombre: p.nombre, tipo: p.tipo, precio: p.precio, cantidad: 1, descuento_pct: 0, stock: p.stock, controla_stock: p.controla_stock, tiene_foto: Boolean(p.tiene_foto) }];
     });
   }
   const cambiar = (id: string, parche: Partial<Linea>) => setLineas((ls) => ls.map((l) => (l.product_id === id ? { ...l, ...parche } : l)));
@@ -274,9 +275,10 @@ export function PosVenta({
                     type="button"
                     disabled={agotado}
                     onClick={() => agregar(p)}
-                    className="flex min-h-14 items-center justify-between gap-3 rounded-xl border border-brand/15 px-4 py-2 text-left hover:bg-iris-light/50 disabled:opacity-50"
+                    className="flex min-h-16 items-center justify-between gap-3 rounded-xl border border-brand/15 px-3 py-2 text-left hover:bg-iris-light/50 disabled:opacity-50"
                   >
-                    <span>
+                    <Miniatura id={p.id} tiene={Boolean(p.tiene_foto)} className="size-14" />
+                    <span className="min-w-0 flex-1">
                       <span className="block font-medium text-brand">{p.nombre}</span>
                       <span className="text-xs text-brand-dark/60">
                         {tipoLabel(p.tipo)}
@@ -300,9 +302,12 @@ export function PosVenta({
                 return (
                   <li key={l.product_id} className="flex flex-col gap-2 rounded-xl border border-brand/15 p-3">
                     <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <p className="font-medium text-brand">{l.nombre}</p>
-                        <p className="text-xs text-brand-dark/60">{dinero(l.precio)} c/u</p>
+                      <div className="flex min-w-0 items-center gap-3">
+                        <Miniatura id={l.product_id} tiene={Boolean(l.tiene_foto)} className="size-12" />
+                        <div>
+                          <p className="font-medium text-brand">{l.nombre}</p>
+                          <p className="text-xs text-brand-dark/60">{dinero(l.precio)} c/u</p>
+                        </div>
                       </div>
                       <button type="button" aria-label={`Quitar ${l.nombre}`} onClick={() => quitar(l.product_id)} className="size-11 shrink-0 rounded-lg text-red-700 hover:bg-red-50">✕</button>
                     </div>

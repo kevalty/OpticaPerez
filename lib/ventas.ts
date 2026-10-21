@@ -23,8 +23,8 @@ export const MAX_DESCUENTO_RECEPCION = 20;
 export const dinero = (n: number) => new Intl.NumberFormat("es-EC", { style: "currency", currency: "USD" }).format(n);
 export const redondear = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
 
-export type Producto = { id: string; nombre: string; tipo: string; precio: number; stock: number; controla_stock: boolean; codigo: string | null };
-export type Linea = { product_id: string; nombre: string; tipo: string; precio: number; cantidad: number; descuento_pct: number; stock: number; controla_stock: boolean };
+export type Producto = { id: string; nombre: string; tipo: string; precio: number; stock: number; controla_stock: boolean; codigo: string | null; tiene_foto?: boolean };
+export type Linea = { product_id: string; nombre: string; tipo: string; precio: number; cantidad: number; descuento_pct: number; stock: number; controla_stock: boolean; tiene_foto?: boolean };
 export type DescuentoGlobal = { tipo: "porcentaje" | "monto"; valor: number };
 
 // Vista previa de totales en pantalla. La fuente de verdad es crear_venta() en la base (mismo calculo y redondeo).

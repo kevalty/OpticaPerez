@@ -1,9 +1,12 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/auth";
 import { msg } from "@/lib/mensajes";
+import { BUCKET_FOTOS, MAX_FOTO_BYTES, tipoImagen } from "@/lib/fotos";
 import { createClient } from "@/lib/supabase/server";
 import { uuid, valores, type FormState } from "@/lib/validation";
 import { productoSchema } from "@/lib/ventas";
@@ -15,6 +18,36 @@ function errorProducto(code: string | undefined): string {
   if (code === "22P02") return "Falta actualizar la base de datos (migración 0009, tipo servicio). Avisa al administrador.";
   if (code === "42703" || code === "PGRST204") return "Falta actualizar la base de datos (migración 0008). Avisa al administrador.";
   return "No se pudo guardar el producto. Inténtalo de nuevo.";
+}
+
+// Sube la foto (si viene una) y la deja como foto actual del producto. La foto anterior solo se borra si ninguna venta
+// la guardo como evidencia. Devuelve un mensaje de error o null.
+async function guardarFoto(supabase: SupabaseClient, id: string, archivo: FormDataEntryValue | null): Promise<string | null> {
+  if (!(archivo instanceof File) || archivo.size === 0) return null;
+  if (archivo.size > MAX_FOTO_BYTES) return "La foto es demasiado grande (máximo 3 MB).";
+  const bytes = new Uint8Array(await archivo.arrayBuffer());
+  const t = tipoImagen(bytes);
+  if (!t) return "La foto debe ser JPG, PNG o WebP.";
+
+  const { data: previo } = await supabase.from("products").select("foto_path").eq("id", id).maybeSingle();
+  const path = `${id}/${randomUUID().replaceAll("-", "")}.${t.ext}`;
+  const up = await supabase.storage.from(BUCKET_FOTOS).upload(path, bytes, { contentType: t.mime, upsert: false });
+  if (up.error) {
+    console.error("subir foto fallo:", up.error.name);
+    return "No se pudo subir la foto. Revisa la conexión e inténtalo de nuevo.";
+  }
+  const { data: fila, error } = await supabase.from("products").update({ foto_path: path }).eq("id", id).select("id");
+  if (error || !fila?.length) {
+    if (error) console.error("guardar foto fallo:", error.code);
+    await supabase.storage.from(BUCKET_FOTOS).remove([path]);
+    return error?.code === "42703" || error?.code === "PGRST204" ? "Falta actualizar la base de datos (migración 0016). Avisa al administrador." : "No se pudo guardar la foto.";
+  }
+  const vieja = (previo as { foto_path: string | null } | null)?.foto_path;
+  if (vieja && vieja !== path) {
+    const { count } = await supabase.from("sale_items").select("id", { count: "exact", head: true }).eq("foto_path", vieja);
+    if (count === 0) await supabase.storage.from(BUCKET_FOTOS).remove([vieja]);
+  }
+  return null;
 }
 
 export async function crearProducto(_prev: FormState, formData: FormData): Promise<FormState> {
@@ -34,7 +67,11 @@ export async function crearProducto(_prev: FormState, formData: FormData): Promi
     const r = await supabase.rpc("ajustar_stock", { p_producto: data.id, p_delta: stock, p_nota: "Stock inicial" });
     if (r.error) console.error("stock inicial fallo:", r.error.code);
   }
+  const errFoto = await guardarFoto(supabase, data.id, formData.get("foto"));
   revalidatePath(LISTA);
+  revalidatePath("/dashboard/inventario");
+  // El producto ya existe: si la foto fallo, se lleva a su pantalla para reintentar.
+  if (errFoto) redirect(`${LISTA}/${data.id}?aviso=foto`);
   redirect(`${LISTA}?ok=creado`);
 }
 
@@ -47,12 +84,15 @@ export async function actualizarProducto(id: string, _prev: FormState, formData:
   void _stock;
 
   const supabase = await createClient();
+  const errFoto = await guardarFoto(supabase, id, formData.get("foto"));
+  if (errFoto) return { error: errFoto, values: valores(formData) };
   const { data, error } = await supabase.from("products").update(datos).eq("id", id).select("id");
   if (error || !data?.length) {
     if (error) console.error("actualizarProducto fallo:", error.code);
     return { error: errorProducto(error?.code), values: valores(formData) };
   }
   revalidatePath(LISTA);
+  revalidatePath("/dashboard/inventario");
   redirect(`${LISTA}?ok=guardado`);
 }
 
