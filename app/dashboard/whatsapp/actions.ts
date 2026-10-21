@@ -40,7 +40,7 @@ export async function guardarPlantilla(tipo: string, _prev: EstadoWA, formData: 
   if (!/^[a-z]{2}(_[A-Z]{2})?$/.test(idioma)) return { error: "Idioma no válido (por ejemplo es o es_MX)." };
   const { data, error } = await (await createClient())
     .from("whatsapp_plantillas")
-    .update({ nombre, idioma, activa: formData.get("activa") === "on", updated_at: new Date().toISOString() })
+    .update({ nombre, idioma, activa: formData.get("activa") === "on" })
     .eq("tipo", tipo)
     .select("tipo");
   if (error || !data?.length) {

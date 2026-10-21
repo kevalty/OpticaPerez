@@ -116,10 +116,10 @@ export default async function PedidoPage({ params }: PageProps<"/dashboard/pedid
             {auto && listo && <EnviarWA ordenId={d.id} tipo="pedido_listo" etiqueta="Avisar por WhatsApp: listo para recibir" destacado />}
             {auto && antesDeListo && <EnviarWA ordenId={d.id} tipo="pedido_recibo" etiqueta="Reenviar recibo por WhatsApp" />}
             {listo && wa2 && (
-              <a href={wa2} target="_blank" rel="noopener noreferrer" className={`${btnPrimary} !bg-emerald-600 hover:!bg-emerald-700`}>Avisar: listo para recibir</a>
+              <a href={wa2} target="_blank" rel="noopener noreferrer" className={auto ? btnGhost : `${btnPrimary} !bg-emerald-600 hover:!bg-emerald-700`}>{auto ? "Manual: abrir WhatsApp (listo para recibir)" : "Avisar: listo para recibir"}</a>
             )}
             {antesDeListo && wa1 && (
-              <a href={wa1} target="_blank" rel="noopener noreferrer" className={btnGhost}>Reenviar recibo (enviado a hacer)</a>
+              <a href={wa1} target="_blank" rel="noopener noreferrer" className={btnGhost}>{auto ? "Manual: abrir WhatsApp (recibo)" : "Reenviar recibo (enviado a hacer)"}</a>
             )}
             {!wa1 && <p className="text-sm text-amber-700">El paciente no tiene un celular válido para WhatsApp.</p>}
           </div>

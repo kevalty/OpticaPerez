@@ -8,7 +8,7 @@ import { uuid } from "@/lib/validation";
 import { ESTADOS_PEDIDO } from "@/lib/pedidos";
 import { enviarMensajePedido } from "@/lib/whatsapp-envios";
 
-export type EstadoPedidoForm = { error?: string; ok?: boolean; aviso?: string };
+export type EstadoPedidoForm = { error?: string; ok?: boolean; aviso?: string; avisoFallo?: boolean };
 
 function mensajeBD(error: { code?: string; message: string }, generico: string): string {
   if (error.code === "P0001") return error.message;
@@ -32,14 +32,16 @@ export async function cambiarEstadoPedido(ordenId: string, estado: string, _prev
   }
   // Aviso automatico "listo para recibir"; si falla, el estado ya cambio y queda el aviso manual.
   let aviso: string | undefined;
+  let avisoFallo = false;
   if (estado === "listo_para_recibir") {
     const r = await enviarMensajePedido(supabase, user.id, ordenId, "pedido_listo", true);
+    avisoFallo = !r.ok;
     aviso = r.ok ? "Se avisó al cliente por WhatsApp." : `No se pudo avisar por WhatsApp: ${r.error} Usa el botón de aviso.`;
   }
   revalidatePath(`/dashboard/pedidos/${ordenId}`);
   revalidatePath("/dashboard/pedidos");
   revalidatePath("/dashboard/whatsapp");
-  return { ok: true, aviso };
+  return { ok: true, aviso, avisoFallo };
 }
 
 export async function guardarEntrega(ordenId: string, _prev: EstadoPedidoForm, formData: FormData): Promise<EstadoPedidoForm> {

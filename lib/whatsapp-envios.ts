@@ -16,7 +16,7 @@ export const TIPOS_WA: { id: TipoWA; label: string }[] = [
 export const tipoWALabel = (id: string) => TIPOS_WA.find((t) => t.id === id)?.label ?? id;
 
 export type Refs = { patient_id?: string | null; order_id?: string | null; sale_id?: string | null; appointment_id?: string | null };
-export type ResultadoEnvio = { ok: boolean; error?: string; yaEnviado?: boolean };
+export type ResultadoEnvio = { ok: boolean; error?: string; yaEnviado?: boolean; motivo?: "permiso" | "plantilla" | "fallo" };
 
 const dinero = (n: number) => `$${n.toFixed(2).replace(".", ",")}`;
 const pad = (n: number) => String(n).padStart(6, "0");
@@ -31,11 +31,11 @@ export async function enviarWA(
   if (!whatsappConfigurado()) return { ok: false, error: "WhatsApp no está configurado en el sistema (modo manual)." };
   const { data: pl, error: ePl } = await supabase.from("whatsapp_plantillas").select("nombre, idioma, activa").eq("tipo", o.tipo).maybeSingle();
   if (ePl || !pl) return { ok: false, error: "Falta actualizar la base de datos (migración 0013). Avisa al administrador." };
-  if (!pl.activa) return { ok: false, error: "La plantilla de este mensaje todavía no está activa. Créala en Meta y actívala en WhatsApp → Plantillas." };
+  if (!pl.activa) return { ok: false, motivo: "plantilla", error: "La plantilla de este mensaje todavía no está activa. Créala en Meta y actívala en WhatsApp → Plantillas." };
 
   if (o.refs.patient_id) {
     const { data: p } = await supabase.from("patients").select("acepta_whatsapp").eq("id", o.refs.patient_id).maybeSingle();
-    if (p && p.acepta_whatsapp === false) return { ok: false, error: "El paciente no autorizó recibir mensajes por WhatsApp." };
+    if (p && p.acepta_whatsapp === false) return { ok: false, motivo: "permiso", error: "El paciente no autorizó recibir mensajes por WhatsApp." };
   }
 
   const r = await enviarPlantillaWA({ telefono: o.telefono, plantilla: pl.nombre, idioma: pl.idioma, cuerpo: o.cuerpo, urlSufijo: o.urlSufijo });
@@ -52,7 +52,7 @@ export async function enviarWA(
     error: r.ok ? null : r.error.slice(0, 500),
     enviado_por: usuarioId,
   });
-  return r.ok ? { ok: true } : { ok: false, error: r.error };
+  return r.ok ? { ok: true } : { ok: false, motivo: "fallo", error: r.error };
 }
 
 type DetallePedido = { token: string | null; telefono: string | null; paciente: string; patient_id: string; numero: number; sale_id: string; saldo: number | null };
