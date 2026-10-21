@@ -36,7 +36,11 @@ export function ListaPedidos({ pedidos, hoy }: { pedidos: FilaPedido[]; hoy: str
                   {p.fecha_entrega && <span className={`ml-2 text-xs ${atrasado ? "font-semibold text-red-700" : "text-brand-dark/60"}`}>entrega {fechaCorta(p.fecha_entrega)}{atrasado ? " · atrasado" : ""}</span>}
                 </span>
                 <span className="flex flex-wrap items-center gap-2">
-                  {p.saldo != null && p.saldo > 0 && <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800">Saldo {dinero(p.saldo)}</span>}
+                  {p.saldo != null && p.saldo > 0 && (
+                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${p.estado === "entregado" ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-800"}`}>
+                      {p.estado === "entregado" ? "Entregado con saldo " : "Saldo "}{dinero(p.saldo)}
+                    </span>
+                  )}
                   <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${BADGE_ESTADO[p.estado] ?? ""}`}>{estadoInfo(p.estado)?.label ?? p.estado}</span>
                 </span>
               </Link>
