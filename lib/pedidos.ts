@@ -1,4 +1,5 @@
 import { resumenPar } from "@/lib/recetario";
+import { fechaLocalCorta } from "@/lib/time";
 
 // Estados del pedido, en orden. Deben coincidir con orden_estados() en la base de datos.
 export const ESTADOS_PEDIDO = [
@@ -45,4 +46,6 @@ export function lineasEspecificaciones(spec: Especificaciones): { titulo: string
   return out;
 }
 
-export const fechaCorta = (iso: string | null | undefined) => (iso ? iso.slice(0, 10).split("-").reverse().join("/") : "");
+// Acepta una fecha ("2026-10-20") o un instante con hora ("2026-10-21T01:49:00Z"; este se muestra en el dia local del negocio).
+export const fechaCorta = (iso: string | null | undefined) =>
+  !iso ? "" : iso.length > 10 ? fechaLocalCorta(iso) : iso.split("-").reverse().join("/");

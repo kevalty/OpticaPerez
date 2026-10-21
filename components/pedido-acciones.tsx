@@ -10,25 +10,44 @@ export function CambiarEstado({
   siguiente,
   anterior,
   puedeRetroceder,
+  saldoPendiente = 0,
 }: {
   ordenId: string;
   siguiente: { id: string; label: string } | null;
   anterior: { id: string; label: string } | null;
   puedeRetroceder: boolean;
+  saldoPendiente?: number;
 }) {
   const [stAvanzar, avanzar, pendA] = useActionState(cambiarEstadoPedido.bind(null, ordenId, siguiente?.id ?? ""), {} as EstadoPedidoForm);
   const [stAtras, atras, pendB] = useActionState(cambiarEstadoPedido.bind(null, ordenId, anterior?.id ?? ""), {} as EstadoPedidoForm);
   const [confirmando, setConfirmando] = useState(false);
+  const [confirmaEntrega, setConfirmaEntrega] = useState(false);
+  // El administrador puede entregar con saldo, pero se le pide confirmar.
+  const pideConfirmar = siguiente?.id === "entregado" && saldoPendiente > 0 && puedeRetroceder;
   const error = stAvanzar.error ?? stAtras.error;
 
   return (
     <div className="flex flex-col gap-2">
       {siguiente ? (
-        <form action={avanzar}>
-          <button disabled={pendA} className={`${btnPrimary} !min-h-14 w-full text-base sm:w-auto sm:px-8`}>
-            {pendA ? "Guardando…" : `Marcar como: ${siguiente.label} →`}
+        pideConfirmar && !confirmaEntrega ? (
+          <button type="button" onClick={() => setConfirmaEntrega(true)} className={`${btnPrimary} !min-h-14 w-full text-base sm:w-auto sm:px-8`}>
+            Marcar como: {siguiente.label} →
           </button>
-        </form>
+        ) : (
+          <form action={avanzar} className="flex flex-col gap-2">
+            {pideConfirmar && (
+              <p className="rounded-xl bg-amber-50 px-4 py-2 text-sm text-amber-800">
+                Hay un saldo de <strong>${saldoPendiente.toFixed(2).replace(".", ",")}</strong>. ¿Entregar igual?
+              </p>
+            )}
+            <div className="flex flex-wrap gap-2">
+              <button disabled={pendA} className={`${btnPrimary} !min-h-14 w-full text-base sm:w-auto sm:px-8`}>
+                {pendA ? "Guardando…" : pideConfirmar ? "Sí, entregar con saldo" : `Marcar como: ${siguiente.label} →`}
+              </button>
+              {pideConfirmar && <button type="button" onClick={() => setConfirmaEntrega(false)} className={btnGhost}>Cancelar</button>}
+            </div>
+          </form>
+        )
       ) : (
         <p className="rounded-xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">Pedido entregado. No hay más pasos.</p>
       )}
