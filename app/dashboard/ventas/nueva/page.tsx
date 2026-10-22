@@ -3,6 +3,7 @@ import { PosVenta } from "@/components/pos-venta";
 import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { shiftDate, todayISO } from "@/lib/time";
+import { versionFoto } from "@/lib/fotos";
 import { uuid } from "@/lib/validation";
 import type { Producto } from "@/lib/ventas";
 
@@ -26,7 +27,7 @@ export default async function NuevaVentaPage({ searchParams }: PageProps<"/dashb
         <h1 className="text-2xl font-semibold text-brand">Nueva venta</h1>
       </div>
       <PosVenta
-        productos={((prods ?? []) as (Producto & { foto_path?: string | null })[]).map(({ foto_path, ...p }) => ({ ...p, tiene_foto: Boolean(foto_path) }))}
+        productos={((prods ?? []) as (Producto & { foto_path?: string | null })[]).map(({ foto_path, ...p }) => ({ ...p, foto_v: versionFoto(foto_path) }))}
         pacienteInicial={(pac as { id: string; nombre: string; documento: string | null } | null) ?? null}
         esAdmin={user.rol === "administrador"}
         entregaSugerida={shiftDate(todayISO(), 7)}

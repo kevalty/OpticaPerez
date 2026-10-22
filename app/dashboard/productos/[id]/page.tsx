@@ -4,7 +4,7 @@ import { ConfirmButton } from "@/components/confirm-button";
 import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { card } from "@/lib/ui";
-import { urlFotoProducto } from "@/lib/fotos";
+import { urlFotoProducto, versionFoto } from "@/lib/fotos";
 import { uuid } from "@/lib/validation";
 import { actualizarProducto, ajustarStock, archivarProducto } from "../actions";
 import { AjusteStockForm, ProductoForm } from "../producto-form";
@@ -28,7 +28,7 @@ export default async function ProductoPage({ params, searchParams }: PageProps<"
         <h1 className="text-2xl font-semibold text-brand">{p.nombre}</h1>
       </div>
       {sp.aviso === "foto" && <p role="alert" className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">El producto se creó, pero la foto no se pudo subir. Vuelve a intentarlo aquí abajo.</p>}
-      <ProductoForm action={actualizarProducto.bind(null, id)} initial={p} submitLabel="Guardar cambios" fotoActual={p.foto_path ? urlFotoProducto(id) : null} />
+      <ProductoForm action={actualizarProducto.bind(null, id)} initial={p} submitLabel="Guardar cambios" fotoActual={p.foto_path ? urlFotoProducto(id, versionFoto(p.foto_path)) : null} />
 
       {p.controla_stock && (
         <section className={`${card} max-w-xl`}>
@@ -38,9 +38,9 @@ export default async function ProductoPage({ params, searchParams }: PageProps<"
         </section>
       )}
 
-      <form action={archivarProducto} className="pt-2">
+      <form action={archivarProducto} className="mt-8 border-t border-brand/10 pt-4">
         <input type="hidden" name="id" value={id} />
-        <ConfirmButton message="¿Archivar este producto? Sale del catálogo; las ventas anteriores lo conservan." className="text-sm text-red-700 hover:underline">
+        <ConfirmButton message="¿Archivar este producto? Sale del catálogo; las ventas anteriores lo conservan." className="inline-flex min-h-12 items-center rounded-lg border border-red-200 px-4 text-sm font-medium text-red-700 hover:bg-red-50">
           Archivar producto
         </ConfirmButton>
       </form>

@@ -113,7 +113,25 @@ export default async function VentaPage({ params, searchParams }: PageProps<"/da
       <section className={card}>
         <h2 className="mb-2 font-semibold text-brand">Detalle</h2>
         {v.sale_items.some((i) => i.foto_path) && <p className="mb-2 text-xs text-brand-dark/60">La foto de cada producto quedó guardada con esta venta como evidencia de lo que se llevó el cliente.</p>}
-        <div className="overflow-x-auto">
+        {/* Celular: una tarjeta por renglon (sin desplazamiento lateral) */}
+        <ul className="flex flex-col divide-y divide-brand/10 sm:hidden">
+          {v.sale_items.map((i) => (
+            <li key={i.id} className="flex items-center gap-3 py-2">
+              {i.foto_path && (
+                <a href={urlFotoVenta(i.id)} target="_blank" rel="noopener noreferrer" aria-label="Ver la foto completa de lo entregado" className="shrink-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={urlFotoVenta(i.id)} alt="" loading="lazy" className="size-14 rounded-lg object-cover ring-1 ring-brand/10" />
+                </a>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-brand">{i.nombre ?? "Producto"}</p>
+                <p className="text-xs text-brand-dark/60">{i.cantidad} × {dinero(i.precio_unitario)}{i.descuento > 0 ? ` · desc. − ${dinero(i.descuento)}` : ""}</p>
+              </div>
+              <p className="font-semibold text-brand">{dinero(i.cantidad * i.precio_unitario - i.descuento)}</p>
+            </li>
+          ))}
+        </ul>
+        <div className="hidden overflow-x-auto sm:block">
           <table className="w-full min-w-[28rem] text-left text-sm">
             <thead><tr className="text-xs uppercase tracking-wide text-brand-dark/50"><th className="py-1 pr-2 font-medium">Producto</th><th className="py-1 pr-2 font-medium">Cant.</th><th className="py-1 pr-2 text-right font-medium">P. unit.</th><th className="py-1 pr-2 text-right font-medium">Desc.</th><th className="py-1 text-right font-medium">Total</th></tr></thead>
             <tbody className="divide-y divide-brand/10">
