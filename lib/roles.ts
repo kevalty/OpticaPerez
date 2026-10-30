@@ -17,5 +17,5 @@ export const MODULES: { id: string; titulo: string; detalle: string; roles: Role
   { id: "pedidos", titulo: "Pedidos", detalle: "Seguimiento de lentes", roles: ["recepcionista", "doctor", "administrador"], semana: 5, href: "/dashboard/pedidos" },
   { id: "whatsapp", titulo: "WhatsApp", detalle: "Recordatorios e historial de envíos", roles: ["recepcionista", "administrador"], semana: 6, href: "/dashboard/whatsapp" },
   { id: "inventario", titulo: "Inventario", detalle: "Stock, alertas y movimientos", roles: ["recepcionista", "administrador", "otro"], semana: 7, href: "/dashboard/inventario" },
-  { id: "admin", titulo: "Administración", detalle: "Usuarios, reportes y configuración", roles: ["administrador"], semana: 8 },
+  { id: "admin", titulo: "Administración", detalle: "Resumen del día y usuarios", roles: ["administrador"], semana: 8, href: "/dashboard/admin" },
 ];
