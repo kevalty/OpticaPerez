@@ -24,6 +24,7 @@ Aplica en orden, una vez cada una, en el SQL Editor:
 - `0014_whatsapp_textos.sql` (Semana 6: descripciones de plantillas con tildes).
 - `0015_inventario.sql` (Semana 7: motivo en los ajustes de stock e historial de movimientos con nombres).
 - `0016_fotos_inventario.sql` (Semana 7: foto de cada producto en Storage y evidencia de la foto en cada renglón de venta).
+- `0017_usuarios_admin.sql` (Semana 8: desde la app solo se puede editar nombre y registro M.S.P. de un usuario; rol y activación solo desde Supabase).
 
 ## Datos del doctor que salen en el certificado
 El nombre y el registro del Ministerio de Salud Publica se imprimen bajo la firma. Hasta que exista la
