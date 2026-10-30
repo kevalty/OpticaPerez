@@ -73,11 +73,18 @@ export function CambiarEstado({
 }
 
 // Boton de envio automatico por WhatsApp (recibo o aviso de pedido listo) con respuesta clara.
-export function EnviarWA({ ordenId, tipo, etiqueta, destacado }: { ordenId: string; tipo: "pedido_recibo" | "pedido_listo"; etiqueta: string; destacado?: boolean }) {
+export function EnviarWA({ ordenId, tipo, etiqueta, destacado, yaEnviado }: { ordenId: string; tipo: "pedido_recibo" | "pedido_listo"; etiqueta: string; destacado?: boolean; yaEnviado?: string | null }) {
   const [st, accion, pend] = useActionState(enviarPedidoWA.bind(null, ordenId, tipo), {} as EstadoWA);
   return (
     <form action={accion} className="flex flex-col gap-1">
-      <button disabled={pend} className={destacado ? `${btnPrimary} !bg-emerald-600 hover:!bg-emerald-700` : btnGhost}>{pend ? "Enviando…" : etiqueta}</button>
+      {yaEnviado && <span className="text-xs text-amber-700">Ya se avisó el {yaEnviado}.</span>}
+      <button
+        disabled={pend}
+        onClick={(e) => { if (yaEnviado && !window.confirm(`Ya se avisó al cliente el ${yaEnviado}. ¿Enviar el mismo mensaje otra vez?`)) e.preventDefault(); }}
+        className={destacado && !yaEnviado ? `${btnPrimary} !bg-emerald-600 hover:!bg-emerald-700` : btnGhost}
+      >
+        {pend ? "Enviando…" : yaEnviado ? `${etiqueta} (otra vez)` : etiqueta}
+      </button>
       {st.ok && <span role="status" className="text-sm text-emerald-700">Enviado por WhatsApp.</span>}
       {st.error && <span role="alert" className="text-sm text-red-700">{st.error}</span>}
     </form>
@@ -126,5 +133,23 @@ export function CopiarEnlace({ enlace }: { enlace: string }) {
         {copiado ? "✓ Copiado" : "Copiar enlace"}
       </button>
     </div>
+  );
+}
+
+// Enlace manual de WhatsApp (wa.me): si el cliente ya recibio ese aviso, pide confirmacion antes de abrirlo.
+export function EnlaceWA({ href, etiqueta, destacado, yaEnviado }: { href: string; etiqueta: string; destacado?: boolean; yaEnviado?: string | null }) {
+  return (
+    <span className="flex flex-col gap-1">
+      {yaEnviado && <span className="text-xs text-amber-700">Ya se avisó el {yaEnviado}.</span>}
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={(e) => { if (yaEnviado && !window.confirm(`Ya se avisó al cliente el ${yaEnviado}. ¿Abrir WhatsApp para enviarlo otra vez?`)) e.preventDefault(); }}
+        className={destacado && !yaEnviado ? `${btnPrimary} !bg-emerald-600 hover:!bg-emerald-700` : btnGhost}
+      >
+        {etiqueta}
+      </a>
+    </span>
   );
 }

@@ -59,6 +59,11 @@ export default async function WhatsAppPage({ searchParams }: PageProps<"/dashboa
         </span>
       </div>
       {ePl && <p role="alert" className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">Falta actualizar la base de datos (migración 0013). Avisa al administrador.</p>}
+      {plantillas.some((p) => !p.activa) && (
+        <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+          Plantillas sin activar: {plantillas.filter((p) => !p.activa).map((p) => p.etiqueta).join(", ")}. Mientras estén inactivas esos avisos no se envían. {esAdmin ? <Link href="/dashboard/whatsapp?tab=plantillas" className="font-medium underline">Activarlas</Link> : "Avisa al administrador."}
+        </p>
+      )}
       {!configurado && <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">Faltan las claves de WhatsApp en el servidor: los avisos de pedido se envían con los botones manuales.</p>}
 
       <nav aria-label="Secciones" className="flex gap-2 border-b border-brand/10 pb-3">
@@ -86,7 +91,7 @@ export default async function WhatsAppPage({ searchParams }: PageProps<"/dashboa
                     {fechaHoraLocal(h.created_at)}
                     <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${h.estado === "enviado" ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-700"}`}>{h.estado === "enviado" ? "Enviado" : "Falló"}</span>
                   </span>
-                  {h.error && <span className="w-full text-xs text-red-700">{/Vercel/.test(h.error) ? "La conexión con WhatsApp venció. Avisa al administrador para renovarla." : h.error}</span>}
+                  {h.error && <span className="w-full text-xs text-red-700">{/Vercel|WHATSAPP_|token/i.test(h.error) ? "La conexión con WhatsApp venció. Avisa al administrador para renovarla." : h.error}</span>}
                 </li>
               ))}
             </ul>
