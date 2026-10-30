@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CambiarEstado, CopiarEnlace, EnviarWA, FechaEntrega } from "@/components/pedido-acciones";
+import { CambiarEstado, CopiarEnlace, EnlaceWA, EnviarWA, FechaEntrega } from "@/components/pedido-acciones";
 import { requireRole } from "@/lib/auth";
 import {
   BADGE_ESTADO,
@@ -16,7 +16,7 @@ import {
 import { enlaceSeguimiento, siteUrl } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
 import { fechaHoraLocal } from "@/lib/time";
-import { btnGhost, btnPrimary, card } from "@/lib/ui";
+import { btnPrimary, card } from "@/lib/ui";
 import { uuid } from "@/lib/validation";
 import { dinero } from "@/lib/ventas";
 import { mensajeListo, mensajeRecibo, waLink } from "@/lib/whatsapp";
@@ -56,6 +56,12 @@ export default async function PedidoPage({ params }: PageProps<"/dashboard/pedid
   const wa1 = enlace ? waLink(d.telefono, mensajeRecibo({ nombre: nombrePila, numero: d.numero, link: enlace })) : null;
   const wa2 = enlace ? waLink(d.telefono, mensajeListo({ nombre: nombrePila, numero: d.numero, link: enlace, saldo: d.saldo ?? 0 })) : null;
   const auto = whatsappConfigurado();
+  // Avisos ya enviados (automaticos): para no molestar al cliente con el mismo mensaje dos veces.
+  const { data: enviados } = await supabase.from("whatsapp_envios").select("tipo, created_at").eq("order_id", id).eq("estado", "enviado").order("created_at", { ascending: false });
+  const yaAvisado = (tipo: string) => {
+    const f = (enviados ?? []).find((e) => e.tipo === tipo)?.created_at;
+    return f ? fechaHoraLocal(f) : null;
+  };
   const listo = d.estado === "listo_para_recibir";
   const entregado = d.estado === "entregado";
   const antesDeListo = idx < indiceEstado("listo_para_recibir");
@@ -113,13 +119,13 @@ export default async function PedidoPage({ params }: PageProps<"/dashboard/pedid
           {listo && <p className="rounded-xl bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-800">El pedido está listo: avisa al cliente para que pase a retirarlo.</p>}
           <div className="flex flex-wrap gap-2">
             {/* Un solo aviso a la vez: el que corresponde al momento del pedido */}
-            {auto && listo && <EnviarWA ordenId={d.id} tipo="pedido_listo" etiqueta="Avisar por WhatsApp: listo para recibir" destacado />}
-            {auto && antesDeListo && <EnviarWA ordenId={d.id} tipo="pedido_recibo" etiqueta="Reenviar recibo por WhatsApp" />}
+            {auto && listo && <EnviarWA ordenId={d.id} tipo="pedido_listo" etiqueta="Avisar por WhatsApp: listo para recibir" destacado yaEnviado={yaAvisado("pedido_listo")} />}
+            {auto && antesDeListo && <EnviarWA ordenId={d.id} tipo="pedido_recibo" etiqueta="Reenviar recibo por WhatsApp" yaEnviado={yaAvisado("pedido_recibo")} />}
             {listo && wa2 && (
-              <a href={wa2} target="_blank" rel="noopener noreferrer" className={auto ? btnGhost : `${btnPrimary} !bg-emerald-600 hover:!bg-emerald-700`}>{auto ? "Manual: abrir WhatsApp (listo para recibir)" : "Avisar: listo para recibir"}</a>
+              <EnlaceWA href={wa2} etiqueta={auto ? "Manual: abrir WhatsApp (listo para recibir)" : "Avisar: listo para recibir"} destacado={!auto} yaEnviado={yaAvisado("pedido_listo")} />
             )}
             {antesDeListo && wa1 && (
-              <a href={wa1} target="_blank" rel="noopener noreferrer" className={btnGhost}>{auto ? "Manual: abrir WhatsApp (recibo)" : "Reenviar recibo (enviado a hacer)"}</a>
+              <EnlaceWA href={wa1} etiqueta={auto ? "Manual: abrir WhatsApp (recibo)" : "Reenviar recibo (enviado a hacer)"} yaEnviado={yaAvisado("pedido_recibo")} />
             )}
             {!wa1 && <p className="text-sm text-amber-700">El paciente no tiene un celular válido para WhatsApp.</p>}
           </div>
