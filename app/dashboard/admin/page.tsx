@@ -4,7 +4,7 @@ import { requireRole } from "@/lib/auth";
 import { ESTADOS_PEDIDO, fechaCorta } from "@/lib/pedidos";
 import { ROLE_LABEL, type Role } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/server";
-import { rangoDia, todayISO } from "@/lib/time";
+import { formatDateLong, rangoDia, todayISO } from "@/lib/time";
 import { card } from "@/lib/ui";
 import { dinero } from "@/lib/ventas";
 
@@ -25,11 +25,11 @@ const ESTADOS_TURNO: { id: string; label: string }[] = [
   { id: "finalizado", label: "Finalizados" },
 ];
 
-function Cifra({ valor, titulo, tono = "normal", href }: { valor: string | number; titulo: string; tono?: "normal" | "alerta" | "mal"; href?: string }) {
+function Cifra({ valor, titulo, tono = "normal", href, chica }: { valor: string | number; titulo: string; tono?: "normal" | "alerta" | "mal"; href?: string; chica?: boolean }) {
   const color = tono === "mal" ? "text-red-700" : tono === "alerta" ? "text-amber-700" : "text-brand";
   const cuerpo = (
     <>
-      <span className={`block text-3xl font-bold ${color}`}>{valor}</span>
+      <span className={`block break-words font-bold ${chica ? "text-2xl" : "text-3xl"} ${color}`}>{valor}</span>
       <span className="text-sm text-brand-dark/70">{titulo}</span>
     </>
   );
@@ -102,20 +102,24 @@ async function Resumen({ supabase, hoy }: { supabase: Cliente; hoy: string }) {
 
       <section className={`${card} flex flex-col gap-3`}>
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="font-semibold text-brand">Turnos de hoy</h2>
-          <Link href="/dashboard/turnos" className="text-sm text-iris hover:underline">Ver agenda</Link>
+          <h2 className="font-semibold text-brand">Turnos de hoy <span className="font-normal text-brand-dark/60">· {formatDateLong(hoy)}</span></h2>
+          <Link href="/dashboard/turnos" className="inline-flex min-h-11 items-center text-sm text-iris hover:underline">Ver agenda</Link>
         </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           <Cifra valor={totalTurnos} titulo="Turnos en total" href="/dashboard/turnos" />
           {ESTADOS_TURNO.map((e) => <Cifra key={e.id} valor={porEstadoTurno.get(e.id) ?? 0} titulo={e.label} tono={e.id === "atendido" && (porEstadoTurno.get("atendido") ?? 0) > 0 ? "alerta" : "normal"} />)}
         </div>
-        {(porEstadoTurno.get("atendido") ?? 0) > 0 && <p className="text-xs text-amber-700">Hay pacientes atendidos esperando pasar por recepción (certificado y cierre).</p>}
+        {(porEstadoTurno.get("atendido") ?? 0) > 0 && (
+          <Link href="/dashboard/turnos" className="inline-flex min-h-11 items-center rounded-xl bg-amber-50 px-4 text-sm text-amber-800">
+            <strong className="mr-1">{porEstadoTurno.get("atendido")}</strong> paciente{porEstadoTurno.get("atendido") === 1 ? "" : "s"} atendido{porEstadoTurno.get("atendido") === 1 ? "" : "s"} esperando pasar por recepción (certificado y cierre) →
+          </Link>
+        )}
       </section>
 
       <section className={`${card} flex flex-col gap-3`}>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="font-semibold text-brand">Pedidos pendientes</h2>
-          <Link href="/dashboard/pedidos" className="text-sm text-iris hover:underline">Ver pedidos</Link>
+          <Link href="/dashboard/pedidos" className="inline-flex min-h-11 items-center text-sm text-iris hover:underline">Ver pedidos</Link>
         </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           <Cifra valor={activos.length} titulo="Sin entregar" href="/dashboard/pedidos?filtro=activos" />
@@ -143,12 +147,13 @@ async function Resumen({ supabase, hoy }: { supabase: Cliente; hoy: string }) {
         <div className={`${card} flex flex-col gap-3`}>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="font-semibold text-brand">Ventas de hoy</h2>
-            <Link href="/dashboard/ventas" className="text-sm text-iris hover:underline">Ver ventas</Link>
+            <Link href="/dashboard/ventas" className="inline-flex min-h-11 items-center text-sm text-iris hover:underline">Ver ventas</Link>
           </div>
-          <div className="grid grid-cols-3 gap-3">
-            <Cifra valor={v.length} titulo="Ventas" />
-            <Cifra valor={dinero(vendido)} titulo="Vendido" />
-            <Cifra valor={dinero(cobrado)} titulo="Cobrado" />
+          <div className="grid grid-cols-2 gap-3">
+            <Cifra valor={dinero(vendido)} titulo="Vendido" chica />
+            <Cifra valor={dinero(cobrado)} titulo="Cobrado" chica />
+            <Cifra valor={v.length} titulo="Ventas" href="/dashboard/ventas" />
+            <Cifra valor={dinero(Math.max(0, vendido - cobrado))} titulo="Por cobrar de hoy" tono={vendido - cobrado > 0.004 ? "alerta" : "normal"} chica />
           </div>
           <Link href="/dashboard/ventas?saldo=1" className={`rounded-xl px-4 py-3 text-sm ${conSaldo.length > 0 ? "bg-amber-50 text-amber-800" : "bg-emerald-50 text-emerald-800"}`}>
             {conSaldo.length > 0 ? <>Saldos pendientes: <strong>{dinero(saldoTotal)}</strong> en {conSaldo.length} venta{conSaldo.length === 1 ? "" : "s"}.</> : "No hay saldos pendientes."}
@@ -158,7 +163,7 @@ async function Resumen({ supabase, hoy }: { supabase: Cliente; hoy: string }) {
         <div className={`${card} flex flex-col gap-3`}>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="font-semibold text-brand">Alertas de stock</h2>
-            <Link href="/dashboard/inventario" className="text-sm text-iris hover:underline">Ver inventario</Link>
+            <Link href="/dashboard/inventario" className="inline-flex min-h-11 items-center text-sm text-iris hover:underline">Ver inventario</Link>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <Cifra valor={agotados.length} titulo="Agotados" tono={agotados.length > 0 ? "mal" : "normal"} href="/dashboard/inventario?f=agotado" />
