@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { dinero } from "@/lib/ventas";
 import { NEGOCIO } from "@/lib/negocio";
 import { fechaHoraLocal } from "@/lib/time";
 
@@ -54,7 +55,7 @@ export function OrdenDoc({ o }: { o: OrdenDatos }) {
       )}
 
       <p className="mt-6 text-sm">
-        Saldo pendiente del cliente: <strong>{o.saldo > 0 ? `$ ${o.saldo.toFixed(2)}` : "ninguno (pagado)"}</strong>
+        Saldo pendiente del cliente: <strong>{o.saldo > 0 ? dinero(o.saldo) : "ninguno (pagado)"}</strong>
       </p>
       <p className="mt-1 text-xs text-brand-dark/60">La hoja RX con las medidas está en la página siguiente.</p>
     </article>

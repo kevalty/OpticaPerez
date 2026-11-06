@@ -50,7 +50,17 @@ export async function listarFichas(supabase: SupabaseClient, q: string): Promise
     .order("fecha", { ascending: false })
     .order("created_at", { ascending: false })
     .limit(LIMITE_FICHAS);
-  if (q) query = query.or(`nombre.ilike.%${q}%,documento.ilike.%${q}%`, { referencedTable: "patients" });
+  if (q) {
+    // Busqueda sin tildes: primero se buscan los pacientes (migracion 0018) y luego sus fichas.
+    const r = await supabase.rpc("buscar_pacientes", { p_q: q, p_limite: 200 });
+    if (!r.error) {
+      const ids = ((r.data ?? []) as { id: string }[]).map((p) => p.id);
+      if (ids.length === 0) return [];
+      query = query.in("patient_id", ids);
+    } else {
+      query = query.or(`nombre.ilike.%${q}%,documento.ilike.%${q}%`, { referencedTable: "patients" });
+    }
+  }
   const [{ data, error }, { data: opts }] = await Promise.all([query, supabase.rpc("list_optometristas")]);
   if (error) console.error("listarFichas fallo:", error.code);
   const doctores = new Map(((opts ?? []) as { id: string; nombre: string }[]).map((o) => [o.id, o.nombre]));
