@@ -86,6 +86,11 @@ export async function buscarPacientes(texto: string): Promise<PacienteFila[]> {
   await requireRole("recepcionista", "doctor", "administrador");
   const q = cleanSearch(texto);
   const supabase = await createClient();
+  // La busqueda ignora tildes y mayusculas (funcion de la migracion 0018). Si aun no esta aplicada, se usa la busqueda simple.
+  const r = await supabase.rpc("buscar_pacientes", { p_q: q, p_limite: LIMITE_PACIENTES });
+  if (!r.error) return (r.data ?? []) as PacienteFila[];
+  if (r.error.code !== "PGRST202" && r.error.code !== "42883") console.error("buscarPacientes fallo:", r.error.code);
+
   let query = supabase
     .from("patients")
     .select("id, nombre, documento, telefono, edad")

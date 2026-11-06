@@ -13,7 +13,7 @@ export async function createClient() {
       setAll(cookiesToSet) {
         try {
           cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options),
+            cookieStore.set(name, value, { ...options, httpOnly: true }), // el navegador nunca habla con Supabase: el JavaScript de la pagina no necesita leerla
           );
         } catch {
           // Llamado desde un Server Component: el proxy ya refresca la sesion.

@@ -1,3 +1,4 @@
+import { LimpiarBorradores } from "@/components/limpiar-borradores";
 import Link from "next/link";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { ConfirmButton } from "@/components/confirm-button";
@@ -131,6 +132,7 @@ export default async function TurnosPage({ searchParams }: PageProps<"/dashboard
         {fecha !== hoy && <Link href="/dashboard/turnos" className={btnGhost}>Hoy</Link>}
       </div>
 
+      {sp.ok === "ficha" && <LimpiarBorradores />}
       {sp.ok === "ficha" && (
         <p role="status" className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
           Ficha guardada. El turno pasó a “Atendido” y recepción ya lo ve.

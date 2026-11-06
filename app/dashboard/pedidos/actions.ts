@@ -36,7 +36,11 @@ export async function cambiarEstadoPedido(ordenId: string, estado: string, _prev
   if (estado === "listo_para_recibir") {
     const r = await enviarMensajePedido(supabase, user.id, ordenId, "pedido_listo", true);
     avisoFallo = !r.ok;
-    aviso = r.ok ? "Se avisó al cliente por WhatsApp." : `No se pudo avisar por WhatsApp: ${r.error} Usa el botón de aviso.`;
+    aviso = !r.ok
+      ? `No se pudo avisar por WhatsApp: ${r.error} Usa el botón de aviso.`
+      : r.yaEnviado
+        ? "El cliente ya había recibido este aviso; no se envió otro."
+        : "Se avisó al cliente por WhatsApp.";
   }
   revalidatePath(`/dashboard/pedidos/${ordenId}`);
   revalidatePath("/dashboard/pedidos");

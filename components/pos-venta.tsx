@@ -391,7 +391,7 @@ export function PosVenta({
           <div className="mt-1 flex justify-between border-t border-brand/10 pt-2 text-xl font-bold text-brand"><dt>Total</dt><dd>{dinero(t.total)}</dd></div>
           {t.descuentoTotal > 0 && (
             <p className={`text-xs ${pasaLimite ? "text-brand-dark/60" : "font-medium text-red-700"}`}>
-              Descuento total: {dinero(t.descuentoTotal)} ({t.pctTotal.toFixed(1)} %)
+              Descuento total: {dinero(t.descuentoTotal)} ({t.pctTotal.toFixed(1).replace(".", ",")} %)
               {!pasaLimite && ` — máximo ${MAX_DESCUENTO_RECEPCION} % sin autorización`}
             </p>
           )}

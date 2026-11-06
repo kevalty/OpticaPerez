@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { cache } from "react";
 import Image from "next/image";
+import { notFound } from "next/navigation";
 import { NEGOCIO } from "@/lib/negocio";
 import { ESTADOS_PEDIDO, SEDE_ENTREGA, estadoInfo, fechaCorta, indiceEstado, lineasEspecificaciones, type Especificaciones } from "@/lib/pedidos";
 import { createClient } from "@/lib/supabase/server";
@@ -38,15 +39,7 @@ export default async function SeguimientoPage({ params }: PageProps<"/seguimient
   const s = await cargar(token);
   const sucursal = NEGOCIO.sucursales[0];
 
-  if (!s) {
-    return (
-      <main className="mx-auto flex min-h-screen w-full max-w-lg flex-col items-center justify-center gap-4 px-6 text-center">
-        <Image src="/logo.png" alt="Óptica Pérez" width={360} height={249} className="h-auto w-36" />
-        <h1 className="text-xl font-semibold text-brand">No encontramos este pedido</h1>
-        <p className="text-sm text-brand-dark/70">Revisa que el enlace esté completo. Si el problema continúa, comunícate con nosotros por WhatsApp o pasa por el local.</p>
-      </main>
-    );
-  }
+  if (!s) notFound(); // responde 404 (la pagina amable esta en not-found.tsx)
 
   const idx = indiceEstado(s.estado);
   const info = estadoInfo(s.estado);
