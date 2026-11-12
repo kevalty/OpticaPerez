@@ -86,6 +86,7 @@ export default async function VentaPage({ params, searchParams }: PageProps<"/da
 
       {sp.ok === "venta" && <p role="status" className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">Venta registrada. Ya puedes imprimir el comprobante{orden ? " y la orden de trabajo" : ""}.</p>}
       {sp.wa === "ok" && <p role="status" className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">Se envió el recibo por WhatsApp al cliente.</p>}
+      {sp.receta === "no" && <p role="alert" className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">La venta se registró, pero la receta externa no se pudo guardar. Avisa al administrador.</p>}
       {sp.wa === "permiso" && <p role="alert" className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">El paciente no aceptó recibir WhatsApp, por eso no se envió el recibo. Puedes activarlo en «Editar datos» del paciente.</p>}
       {sp.wa === "no" && <p role="alert" className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">No se pudo enviar el recibo automático por WhatsApp. Puedes enviarlo con el botón de abajo; el intento quedó en el historial.{motivoWA && <> Motivo: {motivoWA}</>}</p>}
       {orden && !anulada && sp.wa !== "ok" && sp.wa !== "permiso" && (

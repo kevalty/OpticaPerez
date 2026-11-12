@@ -1,5 +1,6 @@
 "use client";
 
+import { FotoCampo } from "@/components/foto-campo";
 import { Miniatura } from "@/components/miniatura";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, useTransition } from "react";
 import { crearVenta } from "@/app/dashboard/ventas/actions";
@@ -9,11 +10,15 @@ import { btnGhost, btnPrimary, card, inputCls } from "@/lib/ui";
 import {
   METODOS,
   MAX_DESCUENTO_RECEPCION,
+  RX_CAMPOS,
+  recetaVacia,
+  type RecetaExterna,
   TIPOS_PRODUCTO,
   calcular,
   dinero,
   redondear,
   tipoLabel,
+  detalleProducto,
   type DescuentoGlobal,
   type Linea,
   type Metodo,
@@ -68,6 +73,12 @@ export function PosVenta({
   const [entrega, setEntrega] = useState(entregaSugerida);
   const [notas, setNotas] = useState("");
   const [obs, setObs] = useState("");
+  // Receta externa: el cliente trae una copia de su receta (no pasa por consultorio ni genera ficha medica).
+  const rxInicial: RecetaExterna = { od: { esfera: "", cilindro: "", eje: "", add: "", dp: "" }, oi: { esfera: "", cilindro: "", eje: "", add: "", dp: "" }, nota: "" };
+  const [recExt, setRecExt] = useState(false);
+  const [rx, setRx] = useState<RecetaExterna>(rxInicial);
+  const [rxFoto, setRxFoto] = useState<File | null>(null);
+  const ponerRx = (ojo: "od" | "oi", campo: (typeof RX_CAMPOS)[number]["id"], valor: string) => setRx((r) => ({ ...r, [ojo]: { ...r[ojo], [campo]: valor } }));
   const [fallo, setFallo] = useState<{ texto: string; clave: string } | null>(null);
   const [enviando, startEnvio] = useTransition();
   const [, startBusqueda] = useTransition();
@@ -91,7 +102,7 @@ export function PosVenta({
   const filtrados = useMemo(() => {
     const t = norm(q.trim());
     return productos
-      .filter((p) => (tipo === "todos" || p.tipo === tipo) && (t === "" || norm(p.nombre).includes(t) || (p.codigo ? norm(p.codigo).includes(t) : false)))
+      .filter((p) => (tipo === "todos" || p.tipo === tipo) && (t === "" || norm(`${p.nombre} ${p.marca ?? ""} ${p.modelo ?? ""} ${p.color ?? ""} ${p.codigo ?? ""}`).includes(t)))
       .slice(0, 8);
   }, [productos, q, tipo]);
 
@@ -130,15 +141,25 @@ export function PosVenta({
     if (!pasaLimite) return setError(`Descuentos de más de ${MAX_DESCUENTO_RECEPCION} % necesitan autorización del administrador.`);
     if (conOrden && !paciente) return setError("Para generar la orden de trabajo elige un paciente.");
     if (pago < 0 || pago > t.total) return setError("El pago no puede ser mayor que el total.");
+    if (conOrden && recExt && recetaVacia(rx) && !rxFoto) return setError("Agrega la foto de la copia de la receta o escribe sus valores.");
     startEnvio(async () => {
-      const r = await crearVenta({
-        patient_id: paciente?.id ?? null,
-        observaciones: obs.trim() || null,
-        items: lineas.map((l) => ({ product_id: l.product_id, cantidad: l.cantidad, descuento_pct: l.descuento_pct })),
-        descuento: desc.valor > 0 ? desc : null,
-        pago: pago > 0 ? { monto: pago, metodo } : null,
-        orden: conOrden ? { fecha_entrega: entrega || null, notas: notas.trim() || null } : null,
-      });
+      const fd = new FormData();
+      fd.set(
+        "datos",
+        JSON.stringify({
+          patient_id: paciente?.id ?? null,
+          observaciones: obs.trim() || null,
+          items: lineas.map((l) => ({ product_id: l.product_id, cantidad: l.cantidad, descuento_pct: l.descuento_pct })),
+          descuento: desc.valor > 0 ? desc : null,
+          pago: pago > 0 ? { monto: pago, metodo } : null,
+          orden: conOrden ? { fecha_entrega: entrega || null, notas: notas.trim() || null } : null,
+        }),
+      );
+      if (conOrden && recExt) {
+        fd.set("receta", JSON.stringify(rx));
+        if (rxFoto) fd.set("receta_foto", rxFoto);
+      }
+      const r = await crearVenta(fd);
       if (r?.error) setError(r.error); // si sale bien, la accion redirige al detalle de la venta
     });
   }
@@ -280,6 +301,7 @@ export function PosVenta({
                     <Miniatura id={p.id} version={p.foto_v} className="size-14" />
                     <span className="min-w-0 flex-1">
                       <span className="block font-medium text-brand">{p.nombre}</span>
+                      <span className="block text-xs text-brand-dark/70">{detalleProducto(p)}</span>
                       <span className="text-xs text-brand-dark/60">
                         {tipoLabel(p.tipo)}
                         {p.controla_stock ? (agotado ? " · agotado" : ` · stock ${p.stock}`) : " · a pedido"}
@@ -357,9 +379,56 @@ export function PosVenta({
                 Notas para el laboratorio
                 <input value={notas} onChange={(e) => setNotas(e.target.value)} maxLength={1000} autoComplete="off" className={inputCls} />
               </label>
-              <p className="text-xs text-brand-dark/60 sm:col-span-2">
-                La orden lleva la hoja RX de la última ficha del paciente (si el doctor la llenó).
-              </p>
+              <label className="flex min-h-11 items-center gap-3 text-sm font-medium text-brand sm:col-span-2">
+                <input type="checkbox" checked={recExt} onChange={(e) => setRecExt(e.target.checked)} className="size-5 accent-[#262d7a]" />
+                El cliente trae una copia de su receta (no pasa por consultorio)
+              </label>
+              {recExt ? (
+                <div className="flex flex-col gap-3 rounded-xl bg-iris-light/40 p-3 sm:col-span-2">
+                  <p className="text-xs text-brand-dark/70">
+                    Se guarda con la orden para el laboratorio. <strong>No se crea ficha médica ni historia clínica</strong>; el paciente solo debe estar registrado.
+                  </p>
+                  <FotoCampo titulo="Foto de la copia de la receta" onChange={setRxFoto} />
+                  <div className="overflow-x-auto">
+                    <table className="w-full min-w-[30rem] text-sm">
+                      <thead>
+                        <tr className="text-left text-xs uppercase tracking-wide text-brand-dark/50">
+                          <th className="w-10 pb-1 font-medium" />
+                          {RX_CAMPOS.map((c) => <th key={c.id} className="pb-1 font-medium">{c.label}</th>)}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(["od", "oi"] as const).map((ojo) => (
+                          <tr key={ojo}>
+                            <td className="pr-1 font-semibold text-brand">{ojo.toUpperCase()}</td>
+                            {RX_CAMPOS.map((c) => (
+                              <td key={c.id} className="pr-1 pb-1">
+                                <input
+                                  value={rx[ojo][c.id]}
+                                  onChange={(e) => ponerRx(ojo, c.id, e.target.value)}
+                                  maxLength={12}
+                                  inputMode="text"
+                                  autoComplete="off"
+                                  aria-label={`${c.label} ${ojo.toUpperCase()}`}
+                                  className={`${inputCls} !px-2`}
+                                />
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <label className="flex flex-col gap-1 text-sm font-medium text-brand">
+                    Observación de la receta (opcional)
+                    <input value={rx.nota} onChange={(e) => setRx((r) => ({ ...r, nota: e.target.value }))} maxLength={300} autoComplete="off" className={inputCls} />
+                  </label>
+                </div>
+              ) : (
+                <p className="text-xs text-brand-dark/60 sm:col-span-2">
+                  La orden lleva la hoja RX de la última ficha del paciente (si el doctor la llenó).
+                </p>
+              )}
             </div>
           )}
         </section>

@@ -32,7 +32,7 @@ export default async function PacientePage({ params, searchParams }: PageProps<"
   const supabase = await createClient();
   const { data: p, error: errorPaciente } = await supabase
     .from("patients")
-    .select("id, nombre, tipo_documento, documento, direccion, telefono, email, edad, ocupacion, fecha_registro, acepta_whatsapp")
+    .select("id, nombre, tipo_documento, documento, direccion, telefono, email, edad, ocupacion, fecha_registro, acepta_whatsapp, fecha_nacimiento")
     .eq("id", id)
     .is("deleted_at", null)
     .maybeSingle();
@@ -69,6 +69,7 @@ export default async function PacientePage({ params, searchParams }: PageProps<"
     ["Acepta WhatsApp", p.acepta_whatsapp === false ? "No" : "Sí"],
     ["Correo", p.email],
     ["Edad", p.edad != null ? `${p.edad} años` : null],
+    ["Nacimiento", p.fecha_nacimiento ? formatDateLong(p.fecha_nacimiento) : null],
     ["Ocupación", p.ocupacion],
     ["Dirección", p.direccion],
     ["Registrado", formatDateLong(p.fecha_registro)],

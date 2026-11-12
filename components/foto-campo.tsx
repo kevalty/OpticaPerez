@@ -27,7 +27,7 @@ async function reducir(file: File): Promise<File> {
 }
 
 // Campo de foto para celular: "Tomar foto" abre la camara y "Galeria" deja elegir una existente.
-export function FotoCampo({ actual, onChange }: { actual?: string | null; onChange: (f: File | null) => void }) {
+export function FotoCampo({ actual, onChange, titulo = "Foto del producto" }: { actual?: string | null; onChange: (f: File | null) => void; titulo?: string }) {
   const [vista, setVista] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [trabajando, setTrabajando] = useState(false);
@@ -53,11 +53,11 @@ export function FotoCampo({ actual, onChange }: { actual?: string | null; onChan
 
   return (
     <div className="flex flex-col gap-2">
-      <span className="text-sm font-medium text-brand">Foto del producto</span>
+      <span className="text-sm font-medium text-brand">{titulo}</span>
       <div className="flex aspect-[4/3] w-full max-w-sm items-center justify-center overflow-hidden rounded-2xl bg-iris-light/40 ring-1 ring-brand/10">
         {src ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={src} alt="Foto del producto" className="size-full object-contain" />
+          <img src={src} alt={titulo} className="size-full object-contain" />
         ) : (
           <span className="px-4 text-center text-sm text-brand-dark/60">Aún no hay foto. Toma una con la cámara.</span>
         )}

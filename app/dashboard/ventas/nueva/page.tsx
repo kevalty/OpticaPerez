@@ -16,7 +16,7 @@ export default async function NuevaVentaPage({ searchParams }: PageProps<"/dashb
 
   const supabase = await createClient();
   const [{ data: prods }, { data: pac }] = await Promise.all([
-    supabase.from("products").select("id, nombre, tipo, precio, stock, controla_stock, codigo, foto_path").is("deleted_at", null).order("tipo").order("nombre"),
+    supabase.from("products").select("id, nombre, tipo, precio, stock, controla_stock, codigo, marca, modelo, color, foto_path").is("deleted_at", null).order("tipo").order("nombre"),
     pid ? supabase.from("patients").select("id, nombre, documento").eq("id", pid).is("deleted_at", null).maybeSingle() : Promise.resolve({ data: null }),
   ]);
 

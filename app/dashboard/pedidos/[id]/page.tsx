@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { FotoEntregaForm } from "@/components/foto-entrega";
 import { CambiarEstado, CopiarEnlace, EnlaceWA, EnviarWA, FechaEntrega } from "@/components/pedido-acciones";
 import { requireRole } from "@/lib/auth";
 import {
@@ -17,7 +18,9 @@ import { enlaceSeguimiento, siteUrl } from "@/lib/site";
 import { createClient } from "@/lib/supabase/server";
 import { fechaHoraLocal } from "@/lib/time";
 import { btnPrimary, card } from "@/lib/ui";
+import { urlFotoEntrega, urlFotoReceta } from "@/lib/fotos";
 import { uuid } from "@/lib/validation";
+import { RX_CAMPOS, type RecetaExterna } from "@/lib/ventas";
 import { dinero } from "@/lib/ventas";
 import { mensajeListo, mensajeRecibo, waLink } from "@/lib/whatsapp";
 import { whatsappConfigurado } from "@/lib/whatsapp-api";
@@ -58,6 +61,15 @@ export default async function PedidoPage({ params }: PageProps<"/dashboard/pedid
   const auto = whatsappConfigurado();
   // Avisos ya enviados (automaticos): para no molestar al cliente con el mismo mensaje dos veces.
   const { data: enviados } = await supabase.from("whatsapp_envios").select("tipo, created_at").eq("order_id", id).eq("estado", "enviado").order("created_at", { ascending: false });
+  // Entrega (fotos y confirmacion del cliente) y receta externa. Si falta la migracion 0020 simplemente no aparecen.
+  const [{ data: fotosData }, { data: confData }, { data: ordData }] = await Promise.all([
+    supabase.from("order_fotos").select("id, created_at").eq("order_id", id).order("created_at"),
+    supabase.from("entrega_confirmaciones").select("nombre_firma, via, confirmado_en").eq("order_id", id).maybeSingle(),
+    supabase.from("orders").select("receta_externa, receta_foto_path").eq("id", id).maybeSingle(),
+  ]);
+  const fotos = (fotosData ?? []) as { id: string; created_at: string }[];
+  const conf = confData as { nombre_firma: string; via: string; confirmado_en: string } | null;
+  const recExt = ordData as { receta_externa: Partial<RecetaExterna> | null; receta_foto_path: string | null } | null;
   const yaAvisado = (tipo: string) => {
     const f = (enviados ?? []).find((e) => e.tipo === tipo)?.created_at;
     return f ? fechaHoraLocal(f) : null;
@@ -134,6 +146,77 @@ export default async function PedidoPage({ params }: PageProps<"/dashboard/pedid
             <CopiarEnlace enlace={enlace} />
           </div>
           <p className="text-xs text-brand-dark/60">{auto ? "Los botones verdes envían el mensaje solos; los de abajo abren WhatsApp con el texto escrito (respaldo manual)." : "Los botones abren WhatsApp con el mensaje ya escrito; solo pulsa enviar."}</p>
+        </section>
+      )}
+
+      {/* Entrega: foto de como se entrega y confirmacion del cliente (garantia) */}
+      {(listo || entregado) && (
+        <section className={`${card} flex flex-col gap-4`}>
+          <h2 className="font-semibold text-brand">Entrega y garantía</h2>
+          {fotos.length > 0 && (
+            <ul className="flex flex-wrap gap-2">
+              {fotos.map((f) => (
+                <li key={f.id}>
+                  <a href={urlFotoEntrega(f.id)} target="_blank" rel="noopener noreferrer" aria-label="Ver la foto de la entrega completa">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={urlFotoEntrega(f.id)} alt="Foto de la entrega" loading="lazy" className="size-24 rounded-xl object-cover ring-1 ring-brand/10" />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+          {puedeActuar && <FotoEntregaForm key={fotos.length} ordenId={d.id} />}
+          <p className="text-xs text-brand-dark/60">La foto queda guardada en el pedido y el cliente la ve en su enlace de seguimiento.</p>
+
+          {entregado && (
+            conf ? (
+              <p role="status" className="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                ✓ <strong>{conf.nombre_firma}</strong> confirmó que recibió su pedido en buen estado y aceptó la garantía el {fechaHoraLocal(conf.confirmado_en)} ({conf.via === "ipad" ? "en el iPad de la óptica" : "desde su celular"}).
+              </p>
+            ) : (
+              <div className="flex flex-col gap-2 rounded-xl bg-amber-50 px-4 py-3">
+                <p className="text-sm text-amber-800">Falta que el cliente confirme la recepción y acepte la garantía.</p>
+                {puedeActuar && enlace && (
+                  <div className="flex flex-wrap gap-2">
+                    <a href={`${enlace}?via=ipad`} target="_blank" rel="noopener noreferrer" className={`${btnPrimary} !min-h-12`}>Abrir en el iPad (el cliente confirma aquí)</a>
+                    {auto && <EnviarWA ordenId={d.id} tipo="entrega" etiqueta="Enviar enlace por WhatsApp" yaEnviado={yaAvisado("entrega")} />}
+                  </div>
+                )}
+                {puedeActuar && enlace && !auto && (
+                  <div>
+                    <p className="mb-1 text-xs text-brand-dark/60">WhatsApp automático no está activo: copia el enlace y envíaselo al cliente.</p>
+                    <CopiarEnlace enlace={enlace} />
+                  </div>
+                )}
+              </div>
+            )
+          )}
+        </section>
+      )}
+
+      {recExt && (recExt.receta_externa || recExt.receta_foto_path) && (
+        <section className={`${card} flex flex-col gap-2`}>
+          <h2 className="font-semibold text-brand">Receta externa (copia traída por el cliente)</h2>
+          <p className="text-xs text-brand-dark/60">No pasó por consultorio: no hay ficha médica ni historia clínica.</p>
+          {recExt.receta_foto_path && (
+            <a href={urlFotoReceta(d.id)} target="_blank" rel="noopener noreferrer" className="w-fit">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={urlFotoReceta(d.id)} alt="Copia de la receta" loading="lazy" className="max-h-56 w-auto rounded-xl object-contain ring-1 ring-brand/10" />
+            </a>
+          )}
+          {recExt.receta_externa && (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[26rem] text-center text-sm">
+                <thead><tr className="text-xs uppercase tracking-wide text-brand-dark/50"><th />{RX_CAMPOS.map((c) => <th key={c.id} className="py-1 font-medium">{c.label}</th>)}</tr></thead>
+                <tbody>
+                  {(["od", "oi"] as const).map((ojo) => (
+                    <tr key={ojo} className="border-t border-brand/10"><td className="py-1 font-semibold text-brand">{ojo.toUpperCase()}</td>{RX_CAMPOS.map((c) => <td key={c.id}>{recExt.receta_externa?.[ojo]?.[c.id] || "—"}</td>)}</tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {recExt.receta_externa?.nota && <p className="text-sm">Observación: {recExt.receta_externa.nota}</p>}
         </section>
       )}
 

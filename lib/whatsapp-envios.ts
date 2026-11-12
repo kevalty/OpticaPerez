@@ -1,17 +1,21 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { PROMOCIONES } from "@/lib/negocio";
 import { fechaCorta } from "@/lib/pedidos";
 import { formatDateLong } from "@/lib/time";
 import { normalizarTelefono } from "@/lib/whatsapp";
 import { enviarPlantillaWA, whatsappConfigurado } from "@/lib/whatsapp-api";
 
-export type TipoWA = "pedido_recibo" | "pedido_listo" | "control_adaptacion" | "control_anual" | "turno" | "saldo";
+export type TipoWA = "pedido_recibo" | "pedido_listo" | "entrega" | "control_adaptacion" | "control_anual" | "turno" | "saldo" | "cumpleanos" | "renovacion";
 export const TIPOS_WA: { id: TipoWA; label: string }[] = [
   { id: "pedido_recibo", label: "Recibo del pedido" },
   { id: "pedido_listo", label: "Pedido listo" },
+  { id: "entrega", label: "Entrega y garantía" },
   { id: "turno", label: "Turno de mañana" },
   { id: "saldo", label: "Saldo pendiente" },
   { id: "control_adaptacion", label: "Control de adaptación" },
   { id: "control_anual", label: "Control anual" },
+  { id: "cumpleanos", label: "Cumpleaños" },
+  { id: "renovacion", label: "Renovación de lunas" },
 ];
 export const tipoWALabel = (id: string) => TIPOS_WA.find((t) => t.id === id)?.label ?? id;
 
@@ -62,7 +66,7 @@ export async function enviarMensajePedido(
   supabase: SupabaseClient,
   usuarioId: string,
   ordenId: string,
-  tipo: "pedido_recibo" | "pedido_listo",
+  tipo: "pedido_recibo" | "pedido_listo" | "entrega",
   evitarDuplicado: boolean,
 ): Promise<ResultadoEnvio> {
   const { data } = await supabase.rpc("pedido_detalle", { p_orden: ordenId });
@@ -74,7 +78,7 @@ export async function enviarMensajePedido(
     if (ya && ya.length > 0) return { ok: true, yaEnviado: true };
   }
   const nombre = d.paciente.trim().split(" ")[0];
-  const cuerpo = tipo === "pedido_recibo" ? [nombre, pad(d.numero)] : [nombre, pad(d.numero), dinero(d.saldo ?? 0)];
+  const cuerpo = tipo === "pedido_listo" ? [nombre, pad(d.numero), dinero(d.saldo ?? 0)] : [nombre, pad(d.numero)];
   return enviarWA(supabase, usuarioId, {
     tipo,
     telefono: d.telefono,
@@ -85,7 +89,7 @@ export async function enviarMensajePedido(
 }
 
 export type Pendiente = {
-  tipo: Exclude<TipoWA, "pedido_recibo" | "pedido_listo">;
+  tipo: Exclude<TipoWA, "pedido_recibo" | "pedido_listo" | "entrega">;
   patient_id: string;
   paciente: string;
   telefono: string | null;
@@ -116,6 +120,10 @@ export async function enviarRecordatorio(
   } else if (p.tipo === "control_adaptacion") {
     cuerpo = [nombre];
     refs.order_id = p.ref_id;
+  } else if (p.tipo === "cumpleanos") {
+    cuerpo = [nombre, PROMOCIONES.descuentoCumpleanos];
+  } else if (p.tipo === "renovacion") {
+    cuerpo = [nombre, PROMOCIONES.descuentoRenovacion];
   } else {
     cuerpo = [nombre, fechaCorta(String(d.ultima))];
   }
