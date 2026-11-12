@@ -73,7 +73,7 @@ export function CambiarEstado({
 }
 
 // Boton de envio automatico por WhatsApp (recibo o aviso de pedido listo) con respuesta clara.
-export function EnviarWA({ ordenId, tipo, etiqueta, destacado, yaEnviado }: { ordenId: string; tipo: "pedido_recibo" | "pedido_listo"; etiqueta: string; destacado?: boolean; yaEnviado?: string | null }) {
+export function EnviarWA({ ordenId, tipo, etiqueta, destacado, yaEnviado }: { ordenId: string; tipo: "pedido_recibo" | "pedido_listo" | "entrega"; etiqueta: string; destacado?: boolean; yaEnviado?: string | null }) {
   const [st, accion, pend] = useActionState(enviarPedidoWA.bind(null, ordenId, tipo), {} as EstadoWA);
   return (
     <form action={accion} className="flex flex-col gap-1">

@@ -5,11 +5,11 @@ import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { btnGhost, btnPrimary, card, inputCls } from "@/lib/ui";
 import { cleanSearch } from "@/lib/validation";
-import { TIPOS_PRODUCTO, tipoLabel } from "@/lib/ventas";
+import { TIPOS_PRODUCTO, detalleProducto, tipoLabel } from "@/lib/ventas";
 
 export const metadata = { title: "Inventario · Óptica Pérez" };
 
-type P = { id: string; nombre: string; tipo: string; stock: number; stock_minimo: number; codigo: string | null; foto_path: string | null };
+type P = { id: string; nombre: string; tipo: string; stock: number; stock_minimo: number; codigo: string | null; marca: string | null; modelo: string | null; color: string | null; foto_path: string | null };
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 const FILTROS = [
   { id: "todos", titulo: "Todos" },
@@ -29,13 +29,13 @@ export default async function InventarioPage({ searchParams }: PageProps<"/dashb
   const supabase = await createClient();
   let query = supabase
     .from("products")
-    .select("id, nombre, tipo, stock, stock_minimo, codigo, foto_path")
+    .select("id, nombre, tipo, stock, stock_minimo, codigo, marca, modelo, color, foto_path")
     .is("deleted_at", null)
     .eq("controla_stock", true)
     .order("stock")
     .order("nombre")
     .limit(500);
-  if (q) query = query.or(`nombre.ilike.%${q}%,codigo.ilike.%${q}%`);
+  if (q) query = query.or(`nombre.ilike.%${q}%,codigo.ilike.%${q}%,marca.ilike.%${q}%,modelo.ilike.%${q}%,color.ilike.%${q}%`);
   if (tipo) query = query.eq("tipo", tipo);
   const { data, error } = await query;
   if (error) console.error("inventario fallo:", error.code);
@@ -66,7 +66,7 @@ export default async function InventarioPage({ searchParams }: PageProps<"/dashb
 
       <form action="/dashboard/inventario" className="flex flex-wrap gap-2">
         <input type="hidden" name="f" value={filtro} />
-        <input name="q" defaultValue={q} placeholder="Buscar por nombre o código" maxLength={60} autoComplete="off" className={`${inputCls} flex-1`} />
+        <input name="q" defaultValue={q} placeholder="Buscar por nombre, marca, modelo, color o código" maxLength={60} autoComplete="off" className={`${inputCls} flex-1`} />
         <select name="tipo" defaultValue={tipo} className={`${inputCls} !w-auto`} aria-label="Tipo">
           <option value="">Todos los tipos</option>
           {TIPOS_PRODUCTO.filter((t) => t.id !== "servicio").map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
@@ -94,7 +94,7 @@ export default async function InventarioPage({ searchParams }: PageProps<"/dashb
                   <Miniatura id={p.id} version={versionFoto(p.foto_path)} className="size-14" />
                   <span className="min-w-0">
                     <Link href={`/dashboard/inventario/movimientos?producto=${p.id}`} className="block font-medium text-brand underline decoration-brand/30 underline-offset-2">{p.nombre}</Link>
-                    <span className="text-xs text-brand-dark/60">{tipoLabel(p.tipo)}{p.codigo ? ` · ${p.codigo}` : ""}</span>
+                    <span className="text-xs text-brand-dark/60">{tipoLabel(p.tipo)}{p.codigo ? ` · ${p.codigo}` : ""}{detalleProducto(p) ? ` · ${detalleProducto(p)}` : ""}</span>
                   </span>
                 </span>
                 <span className="flex items-center gap-3 text-sm">

@@ -16,6 +16,8 @@ const detalleDe = (p: Pendiente): string => {
   if (p.tipo === "turno") return `${formatDateLong(String(d.fecha))}${d.hora ? ` a las ${d.hora}` : ""}`;
   if (p.tipo === "saldo") return `Venta N.º ${pad(d.numero)} · saldo $${Number(d.saldo).toFixed(2).replace(".", ",")}`;
   if (p.tipo === "control_adaptacion") return "Pedido entregado hace unas semanas";
+  if (p.tipo === "cumpleanos") return "Cumple años hoy";
+  if (p.tipo === "renovacion") return `Entregado el ${fechaCorta(String(d.entregado))} (más de 6 meses)`;
   return `Última consulta: ${fechaCorta(String(d.ultima))}`;
 };
 

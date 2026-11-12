@@ -8,10 +8,11 @@ import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { btnGhost, btnPrimary } from "@/lib/ui";
 import { uuid } from "@/lib/validation";
+import type { RecetaExterna } from "@/lib/ventas";
 
 export const metadata = { title: "Orden de trabajo · Óptica Pérez" };
 
-type RxOrden = Pick<CertificadoDatos, "fecha" | "paciente" | "tipo_documento" | "documento" | "direccion" | "telefono" | "email" | "recetario"> & { tiene_ficha: boolean; rx?: CertificadoDatos["rx"] };
+type RxOrden = Pick<CertificadoDatos, "fecha" | "paciente" | "tipo_documento" | "documento" | "direccion" | "telefono" | "email" | "recetario"> & { tiene_ficha: boolean; rx?: CertificadoDatos["rx"]; receta_externa?: RecetaExterna | null; receta_foto?: boolean };
 
 // Orden de trabajo + hoja RX. La RX llega por rx_orden(): la recepcionista no lee fichas, solo lo que lleva la hoja.
 export default async function OrdenPage({ params }: PageProps<"/dashboard/ventas/[id]/orden">) {
@@ -48,7 +49,9 @@ export default async function OrdenPage({ params }: PageProps<"/dashboard/ventas
     notas: orden.notas,
     items: v.sale_items,
     saldo: Math.round((v.total - v.pagado) * 100) / 100,
+    recetaExterna: rx && (rx.receta_externa || rx.receta_foto) ? { rx: rx.receta_externa ?? null, ordenId: orden.id, conFoto: Boolean(rx.receta_foto) } : null,
   };
+  const externa = Boolean(o.recetaExterna);
 
   return (
     <>
@@ -56,15 +59,15 @@ export default async function OrdenPage({ params }: PageProps<"/dashboard/ventas
         <Link href={`/dashboard/ventas/${id}`} className={btnGhost}>← Volver a la venta</Link>
         <PrintButton className={btnPrimary} />
       </div>
-      {rx && !rx.tiene_ficha && (
+      {rx && !externa && !rx.tiene_ficha && (
         <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-brand print:hidden">Este paciente todavía no tiene ficha médica: la hoja RX sale en blanco para llenarla a mano.</p>
       )}
-      {rx && rx.tiene_ficha && !rx.recetario && (
+      {rx && !externa && rx.tiene_ficha && !rx.recetario && (
         <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-brand print:hidden">El doctor no llenó la RX en la última consulta: la hoja sale solo con los datos del paciente.</p>
       )}
 
       <OrdenDoc o={o} />
-      {rx && (
+      {rx && !externa && (
         <div className="break-before-page">
           <RecetarioDoc c={{ ...rx, fechaEntrega: orden.fecha_entrega }} />
         </div>
