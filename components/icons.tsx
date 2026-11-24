@@ -57,6 +57,15 @@ const ICONOS: Record<string, React.ReactNode> = {
 };
 
 ICONOS.productos = ICONOS.inventario;
+ICONOS.reportes = (
+  <>
+    <path d="M4 20V4" />
+    <path d="M4 20h16" />
+    <rect x="7" y="12" width="3" height="5" rx="0.8" />
+    <rect x="12" y="8" width="3" height="9" rx="0.8" />
+    <rect x="17" y="5" width="3" height="12" rx="0.8" />
+  </>
+);
 ICONOS.admin = (
   <>
     <rect x="4" y="4" width="7" height="7" rx="1.5" />
