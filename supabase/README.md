@@ -27,6 +27,7 @@ Aplica en orden, una vez cada una, en el SQL Editor:
 - `0017_usuarios_admin.sql` (Semana 8: desde la app solo se puede editar nombre y registro M.S.P. de un usuario; rol y activación solo desde Supabase).
 - `0018_ajustes_qa.sql` (ajustes de la QA completa: búsqueda sin tildes, recepción cobra saldos de otro turno y protección contra pagos repetidos).
 - `0019_tipo_gafa.sql` (**ejecutar sola**) y `0020_peticion_cliente.sql` (maqueta de la petición del cliente: marca/modelo/color y tipo gafa, fecha de nacimiento, receta externa, fotos de entrega y confirmación con garantía, WhatsApp de cumpleaños, renovación y entrega).
+- `0021_reportes.sql` (Semana 9: función `reporte_ventas` para los reportes de ventas, solo administrador).
 
 ## Datos del doctor que salen en el certificado
 El nombre y el registro del Ministerio de Salud Publica se imprimen bajo la firma. Hasta que exista la
