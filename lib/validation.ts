@@ -56,7 +56,8 @@ export const patientSchema = z
       z
         .string()
         .regex(/^\d{4}-\d{2}-\d{2}$/, "La fecha de nacimiento no es válida")
-        .refine((d) => d >= "1900-01-01" && d <= new Date().toISOString().slice(0, 10), "La fecha de nacimiento no es válida")
+        .refine((d) => d >= "1900-01-01", "La fecha de nacimiento no es válida (el año debe ser 1900 o posterior)")
+        .refine((d) => d <= new Date().toISOString().slice(0, 10), "La fecha de nacimiento no puede ser futura")
         .nullable(),
     ),
     acepta_whatsapp: z.preprocess((v) => v === "on" || v === "true", z.boolean()),
@@ -68,7 +69,15 @@ export const patientSchema = z
     if (p.tipo_documento === "pasaporte" && !/^[A-Za-z0-9]{5,20}$/.test(p.documento)) {
       ctx.addIssue({ code: "custom", path: ["documento"], message: "El pasaporte debe tener entre 5 y 20 letras o números." });
     }
-  });
+  })
+  // Si no se escribio la edad pero si la fecha de nacimiento, la edad se calcula sola.
+  .transform((p) => ({ ...p, edad: p.edad ?? (p.fecha_nacimiento ? edadDesde(p.fecha_nacimiento) : null) }));
+
+function edadDesde(nacimiento: string, hoy = new Date().toISOString().slice(0, 10)): number {
+  const [y, m, d] = nacimiento.split("-").map(Number);
+  const [hy, hm, hd] = hoy.split("-").map(Number);
+  return Math.max(0, hy - y - (hm < m || (hm === m && hd < d) ? 1 : 0));
+}
 
 export const uuid = z.string().uuid();
 

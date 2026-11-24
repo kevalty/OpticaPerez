@@ -20,7 +20,7 @@ type Venta = {
   patients: { nombre: string; documento: string | null; telefono: string | null } | null;
   sale_items: { id: string; foto_path: string | null; nombre: string | null; cantidad: number; precio_unitario: number; descuento: number }[];
   sale_payments: { id: string; monto: number; metodo: string; nota: string | null; fecha: string }[];
-  orders: { id: string; estado: string; fecha_entrega: string | null; token: string; deleted_at: string | null }[];
+  orders: { id: string; estado: string; fecha_entrega: string | null; token: string; deleted_at: string | null; receta_foto_path: string | null; receta_externa: unknown | null }[];
 };
 const num = (n: number) => String(n).padStart(6, "0");
 
@@ -34,7 +34,7 @@ export default async function VentaPage({ params, searchParams }: PageProps<"/da
   const { data, error } = await supabase
     .from("sales")
     .select(
-      "id, numero, fecha, subtotal, descuento, total, pagado, estado, observaciones, anulada_motivo, vendedor_id, patient_id, patients(nombre, documento, telefono), sale_items(id, foto_path, nombre, cantidad, precio_unitario, descuento), sale_payments(id, monto, metodo, nota, fecha), orders(id, estado, fecha_entrega, token, deleted_at)",
+      "id, numero, fecha, subtotal, descuento, total, pagado, estado, observaciones, anulada_motivo, vendedor_id, patient_id, patients(nombre, documento, telefono), sale_items(id, foto_path, nombre, cantidad, precio_unitario, descuento), sale_payments(id, monto, metodo, nota, fecha), orders(id, estado, fecha_entrega, token, deleted_at, receta_foto_path, receta_externa)",
     )
     .eq("id", id)
     .is("deleted_at", null)
@@ -79,7 +79,7 @@ export default async function VentaPage({ params, searchParams }: PageProps<"/da
         </div>
         <div className="flex flex-wrap gap-2">
           <Link href={`/dashboard/ventas/${v.id}/comprobante`} className={btnPrimary}>Imprimir comprobante</Link>
-          {orden && <Link href={`/dashboard/ventas/${v.id}/orden`} className={btnGhost}>Imprimir orden + RX</Link>}
+          {orden && <Link href={`/dashboard/ventas/${v.id}/orden`} className={btnGhost}>{orden.receta_foto_path || orden.receta_externa ? "Imprimir orden" : "Imprimir orden + RX"}</Link>}
           {orden && <Link href={`/dashboard/pedidos/${orden.id}`} className={btnGhost}>Ver pedido</Link>}
         </div>
       </div>

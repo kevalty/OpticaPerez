@@ -35,12 +35,13 @@ export async function enviarWA(
   if (!whatsappConfigurado()) return { ok: false, error: "WhatsApp no está configurado en el sistema (modo manual)." };
   const { data: pl, error: ePl } = await supabase.from("whatsapp_plantillas").select("nombre, idioma, activa").eq("tipo", o.tipo).maybeSingle();
   if (ePl || !pl) return { ok: false, error: "Falta actualizar la base de datos (migración 0013). Avisa al administrador." };
-  if (!pl.activa) return { ok: false, motivo: "plantilla", error: "La plantilla de este mensaje todavía no está activa. Créala en Meta y actívala en WhatsApp → Plantillas." };
 
   if (o.refs.patient_id) {
     const { data: p } = await supabase.from("patients").select("acepta_whatsapp").eq("id", o.refs.patient_id).maybeSingle();
     if (p && p.acepta_whatsapp === false) return { ok: false, motivo: "permiso", error: "El paciente no autorizó recibir mensajes por WhatsApp." };
   }
+
+  if (!pl.activa) return { ok: false, motivo: "plantilla", error: "La plantilla de este mensaje todavía no está activa. Créala en Meta y actívala en WhatsApp → Plantillas." };
 
   const r = await enviarPlantillaWA({ telefono: o.telefono, plantilla: pl.nombre, idioma: pl.idioma, cuerpo: o.cuerpo, urlSufijo: o.urlSufijo });
   await supabase.from("whatsapp_envios").insert({
