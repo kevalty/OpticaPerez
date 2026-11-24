@@ -370,7 +370,7 @@ export function PosVenta({
             3. Generar orden de trabajo para el laboratorio
           </label>
           {conOrden && (
-            <div className="grid gap-3 sm:grid-cols-[12rem_1fr]">
+            <div className="grid min-w-0 gap-3 sm:grid-cols-[12rem_1fr]">
               <label className="flex flex-col gap-1 text-sm font-medium text-brand">
                 Fecha de entrega
                 <input type="date" value={entrega} onChange={(e) => setEntrega(e.target.value)} className={inputCls} />
@@ -384,40 +384,32 @@ export function PosVenta({
                 El cliente trae una copia de su receta (no pasa por consultorio)
               </label>
               {recExt ? (
-                <div className="flex flex-col gap-3 rounded-xl bg-iris-light/40 p-3 sm:col-span-2">
+                <div className="flex min-w-0 flex-col gap-3 rounded-xl bg-iris-light/40 p-3 sm:col-span-2">
                   <p className="text-xs text-brand-dark/70">
                     Se guarda con la orden para el laboratorio. <strong>No se crea ficha médica ni historia clínica</strong>; el paciente solo debe estar registrado.
                   </p>
                   <FotoCampo titulo="Foto de la copia de la receta" onChange={setRxFoto} />
-                  <div className="overflow-x-auto">
-                    <table className="w-full min-w-[30rem] text-sm">
-                      <thead>
-                        <tr className="text-left text-xs uppercase tracking-wide text-brand-dark/50">
-                          <th className="w-10 pb-1 font-medium" />
-                          {RX_CAMPOS.map((c) => <th key={c.id} className="pb-1 font-medium">{c.label}</th>)}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {(["od", "oi"] as const).map((ojo) => (
-                          <tr key={ojo}>
-                            <td className="pr-1 font-semibold text-brand">{ojo.toUpperCase()}</td>
-                            {RX_CAMPOS.map((c) => (
-                              <td key={c.id} className="pr-1 pb-1">
-                                <input
-                                  value={rx[ojo][c.id]}
-                                  onChange={(e) => ponerRx(ojo, c.id, e.target.value)}
-                                  maxLength={12}
-                                  inputMode="text"
-                                  autoComplete="off"
-                                  aria-label={`${c.label} ${ojo.toUpperCase()}`}
-                                  className={`${inputCls} !px-2`}
-                                />
-                              </td>
-                            ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="flex flex-col gap-3">
+                    {(["od", "oi"] as const).map((ojo) => (
+                      <fieldset key={ojo} className="min-w-0">
+                        <legend className="mb-1 text-sm font-semibold text-brand">{ojo === "od" ? "OD (ojo derecho)" : "OI (ojo izquierdo)"}</legend>
+                        <div className="grid grid-cols-5 gap-1.5">
+                          {RX_CAMPOS.map((c) => (
+                            <label key={c.id} className="flex min-w-0 flex-col gap-0.5 text-[11px] font-medium uppercase tracking-wide text-brand-dark/60">
+                              {c.label}
+                              <input
+                                value={rx[ojo][c.id]}
+                                onChange={(e) => ponerRx(ojo, c.id, e.target.value)}
+                                maxLength={12}
+                                autoComplete="off"
+                                aria-label={`${c.label} ${ojo.toUpperCase()}`}
+                                className={`${inputCls} !px-1.5 text-center text-sm normal-case tracking-normal`}
+                              />
+                            </label>
+                          ))}
+                        </div>
+                      </fieldset>
+                    ))}
                   </div>
                   <label className="flex flex-col gap-1 text-sm font-medium text-brand">
                     Observación de la receta (opcional)

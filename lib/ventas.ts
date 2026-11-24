@@ -17,8 +17,12 @@ export const TIPOS_PRODUCTO = [
   { id: "servicio", label: "Servicio" },
 ] as const;
 // "Marca Modelo · Color" para mostrar bajo el nombre del producto (vacio si no hay datos).
-export const detalleProducto = (p: { marca?: string | null; modelo?: string | null; color?: string | null }): string =>
-  [[p.marca, p.modelo].filter(Boolean).join(" "), p.color].filter(Boolean).join(" · ");
+// Si el nombre ya es justo "marca modelo color" (se armo solo), no se repite debajo.
+export const detalleProducto = (p: { nombre?: string; marca?: string | null; modelo?: string | null; color?: string | null }): string => {
+  const armado = [p.marca, p.modelo, p.color].filter(Boolean).join(" ");
+  if (p.nombre && p.nombre.trim().toLowerCase() === armado.toLowerCase()) return "";
+  return [[p.marca, p.modelo].filter(Boolean).join(" "), p.color].filter(Boolean).join(" · ");
+};
 export const tipoLabel = (id: string) => TIPOS_PRODUCTO.find((t) => t.id === id)?.label ?? id;
 
 // Debe coincidir con crear_venta() en la base: la recepcionista llega hasta 20 % de descuento total.
@@ -86,11 +90,15 @@ export const recetaVacia = (r: RecetaExterna): boolean => [...Object.values(r.od
 
 // ---------- Productos (catalogo; lo administra el administrador) ----------
 const CTRL = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
-const texto60 = z
-  .string()
-  .trim()
-  .max(60, "Máximo 60 caracteres")
-  .transform((v) => (v === "" ? null : v.replace(CTRL, "")));
+// Un servicio no muestra marca/modelo/color: el formulario no los envia (llegan sin valor).
+const texto60 = z.preprocess(
+  (v) => (v == null ? "" : v),
+  z
+    .string()
+    .trim()
+    .max(60, "Máximo 60 caracteres")
+    .transform((v) => (v === "" ? null : v.replace(CTRL, ""))),
+);
 export const productoSchema = z
   .object({
     nombre: z.string().trim().max(200, "El nombre es demasiado largo").transform((v) => v.replace(CTRL, "")),

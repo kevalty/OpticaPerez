@@ -70,6 +70,8 @@ export default async function PedidoPage({ params }: PageProps<"/dashboard/pedid
   const fotos = (fotosData ?? []) as { id: string; created_at: string }[];
   const conf = confData as { nombre_firma: string; via: string; confirmado_en: string } | null;
   const recExt = ordData as { receta_externa: Partial<RecetaExterna> | null; receta_foto_path: string | null } | null;
+  // Recepcion solo abre las ventas que le corresponden (RLS): el enlace "Ver venta" se muestra solo si puede abrirla.
+  const { data: ventaVisible } = user.rol === "doctor" ? { data: null } : await supabase.from("sales").select("id").eq("id", d.sale_id).maybeSingle();
   const yaAvisado = (tipo: string) => {
     const f = (enviados ?? []).find((e) => e.tipo === tipo)?.created_at;
     return f ? fechaHoraLocal(f) : null;
@@ -205,9 +207,9 @@ export default async function PedidoPage({ params }: PageProps<"/dashboard/pedid
             </a>
           )}
           {recExt.receta_externa && (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[26rem] text-center text-sm">
-                <thead><tr className="text-xs uppercase tracking-wide text-brand-dark/50"><th />{RX_CAMPOS.map((c) => <th key={c.id} className="py-1 font-medium">{c.label}</th>)}</tr></thead>
+            <div>
+              <table className="w-full table-fixed text-center text-sm">
+                <thead><tr className="text-[10px] uppercase tracking-wide text-brand-dark/50 sm:text-xs"><th className="w-9" />{RX_CAMPOS.map((c) => <th key={c.id} className="py-1 font-medium">{c.label}</th>)}</tr></thead>
                 <tbody>
                   {(["od", "oi"] as const).map((ojo) => (
                     <tr key={ojo} className="border-t border-brand/10"><td className="py-1 font-semibold text-brand">{ojo.toUpperCase()}</td>{RX_CAMPOS.map((c) => <td key={c.id}>{recExt.receta_externa?.[ojo]?.[c.id] || "—"}</td>)}</tr>
@@ -239,7 +241,7 @@ export default async function PedidoPage({ params }: PageProps<"/dashboard/pedid
         <dl className="grid gap-3 text-sm sm:grid-cols-3">
           <div><dt className="text-xs uppercase tracking-wide text-brand-dark/50">Celular</dt><dd>{d.telefono ?? "—"}</dd></div>
           {d.saldo != null && <div><dt className="text-xs uppercase tracking-wide text-brand-dark/50">Saldo pendiente</dt><dd className={d.saldo > 0 ? "font-semibold text-amber-700" : "text-emerald-700"}>{dinero(d.saldo)}</dd></div>}
-          <div><dt className="text-xs uppercase tracking-wide text-brand-dark/50">Venta</dt><dd>{user.rol === "doctor" ? "—" : <Link href={`/dashboard/ventas/${d.sale_id}`} className="text-iris hover:underline">Ver venta</Link>}</dd></div>
+          <div><dt className="text-xs uppercase tracking-wide text-brand-dark/50">Venta</dt><dd>{ventaVisible ? <Link href={`/dashboard/ventas/${d.sale_id}`} className="text-iris hover:underline">Ver venta</Link> : <span className="text-brand-dark/60">{user.rol === "doctor" ? "—" : "De otra recepcionista"}</span>}</dd></div>
         </dl>
         {puedeActuar && !entregado && <FechaEntrega ordenId={d.id} valor={d.fecha_entrega} />}
         {(!puedeActuar || entregado) && d.fecha_entrega && <p className="text-sm">Entrega estimada: <strong>{fechaCorta(d.fecha_entrega)}</strong></p>}

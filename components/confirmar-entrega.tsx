@@ -9,7 +9,7 @@ import { btnPrimary, inputCls } from "@/lib/ui";
 export function ConfirmarEntrega({ token, via, nombreSugerido }: { token: string; via: "ipad" | "whatsapp"; nombreSugerido?: string }) {
   const [st, accion, pend] = useActionState(confirmarEntrega.bind(null, token, via), {} as EstadoConfirmacion);
   return (
-    <form action={accion} className="flex flex-col gap-4">
+    <form key={st.nombre ?? "nuevo"} action={accion} className="flex flex-col gap-4">
       <div className="rounded-xl bg-iris-light/40 px-4 py-3 text-sm">
         <p className="mb-1 font-semibold text-brand">{GARANTIA.titulo}</p>
         <ul className="list-disc space-y-1 pl-5 text-brand-dark/80">
@@ -26,7 +26,7 @@ export function ConfirmarEntrega({ token, via, nombreSugerido }: { token: string
       </label>
       <label className="flex flex-col gap-1 text-sm font-medium text-brand">
         Tu nombre completo (firma)
-        <input name="nombre" defaultValue={nombreSugerido} required minLength={2} maxLength={120} autoComplete="name" className={inputCls} />
+        <input name="nombre" defaultValue={st.nombre ?? nombreSugerido} required minLength={2} maxLength={120} autoComplete="name" className={inputCls} />
       </label>
       <button disabled={pend} className={`${btnPrimary} !min-h-14 text-base`}>{pend ? "Guardando…" : "Confirmar mi entrega"}</button>
       {st.error && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{st.error}</p>}
