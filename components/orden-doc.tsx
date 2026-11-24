@@ -1,5 +1,6 @@
 import Image from "next/image";
-import { dinero } from "@/lib/ventas";
+import { urlFotoReceta } from "@/lib/fotos";
+import { RX_CAMPOS, dinero, type RecetaExterna } from "@/lib/ventas";
 import { NEGOCIO } from "@/lib/negocio";
 import { fechaHoraLocal } from "@/lib/time";
 
@@ -12,6 +13,8 @@ export type OrdenDatos = {
   notas: string | null;
   items: { nombre: string | null; cantidad: number }[];
   saldo: number;
+  // Copia de receta que trae el cliente (no hay ficha medica): se imprime en la misma orden.
+  recetaExterna?: { rx: Partial<RecetaExterna> | null; ordenId: string; conFoto: boolean } | null;
 };
 
 // Orden de trabajo para el laboratorio (pagina 1). La hoja RX va en la pagina siguiente.
@@ -47,6 +50,36 @@ export function OrdenDoc({ o }: { o: OrdenDatos }) {
         ))}
       </ul>
 
+      {o.recetaExterna && (
+        <div className="mt-5 break-inside-avoid">
+          <h2 className="w-fit rounded-r-full bg-brand px-4 py-0.5 text-sm font-bold text-white">Receta (copia traída por el cliente)</h2>
+          {o.recetaExterna.rx && (
+            <table className="mt-2 w-full border-collapse text-center text-sm">
+              <thead>
+                <tr className="bg-iris-light/60 text-brand">
+                  <th className="border border-brand/20 px-2 py-1" />
+                  {RX_CAMPOS.map((c) => <th key={c.id} className="border border-brand/20 px-2 py-1">{c.label}</th>)}
+                </tr>
+              </thead>
+              <tbody>
+                {(["od", "oi"] as const).map((ojo) => (
+                  <tr key={ojo}>
+                    <td className="border border-brand/20 px-2 py-1 font-bold text-brand">{ojo.toUpperCase()}</td>
+                    {RX_CAMPOS.map((c) => <td key={c.id} className="border border-brand/20 px-2 py-1">{o.recetaExterna?.rx?.[ojo]?.[c.id] || "—"}</td>)}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+          {o.recetaExterna.rx?.nota && <p className="mt-1 text-xs">Observación: {o.recetaExterna.rx.nota}</p>}
+          {o.recetaExterna.conFoto && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={urlFotoReceta(o.recetaExterna.ordenId)} alt="Copia de la receta del cliente" className="mt-3 max-h-[110mm] w-auto max-w-full rounded border border-brand/20 object-contain" />
+          )}
+          <p className="mt-1 text-[11px] text-brand-dark/60">Copia de receta externa: no se generó historia clínica.</p>
+        </div>
+      )}
+
       {o.notas && (
         <div className="mt-4">
           <p className="font-semibold text-brand">Notas para el laboratorio</p>
@@ -57,7 +90,7 @@ export function OrdenDoc({ o }: { o: OrdenDatos }) {
       <p className="mt-6 text-sm">
         Saldo pendiente del cliente: <strong>{o.saldo > 0 ? dinero(o.saldo) : "ninguno (pagado)"}</strong>
       </p>
-      <p className="mt-1 text-xs text-brand-dark/60">La hoja RX con las medidas está en la página siguiente.</p>
+      {!o.recetaExterna && <p className="mt-1 text-xs text-brand-dark/60">La hoja RX con las medidas está en la página siguiente.</p>}
     </article>
   );
 }

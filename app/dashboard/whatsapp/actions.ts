@@ -10,7 +10,7 @@ import { enviarPlantillaWA, whatsappConfigurado } from "@/lib/whatsapp-api";
 export type EstadoWA = { error?: string; ok?: boolean };
 
 // Boton "Enviar por WhatsApp" de un pedido (recibo o listo para recibir).
-export async function enviarPedidoWA(ordenId: string, tipo: "pedido_recibo" | "pedido_listo", _prev: EstadoWA): Promise<EstadoWA> {
+export async function enviarPedidoWA(ordenId: string, tipo: "pedido_recibo" | "pedido_listo" | "entrega", _prev: EstadoWA): Promise<EstadoWA> {
   void _prev;
   const user = await requireRole("recepcionista", "administrador");
   if (!uuid.safeParse(ordenId).success) return { error: "Pedido no válido." };

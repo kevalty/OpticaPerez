@@ -18,7 +18,7 @@ export default async function ProductoPage({ params, searchParams }: PageProps<"
   if (!uuid.safeParse(id).success) notFound();
 
   const supabase = await createClient();
-  const { data: p } = await supabase.from("products").select("id, nombre, tipo, codigo, precio, stock, stock_minimo, controla_stock, foto_path").eq("id", id).is("deleted_at", null).maybeSingle();
+  const { data: p } = await supabase.from("products").select("id, nombre, tipo, marca, modelo, color, codigo, precio, stock, stock_minimo, controla_stock, foto_path").eq("id", id).is("deleted_at", null).maybeSingle();
   if (!p) notFound();
 
   return (

@@ -50,6 +50,15 @@ export const patientSchema = z
       z.number("La edad debe ser un número").int("La edad debe ser un número entero").min(0, "Edad no válida").max(130, "Edad no válida").nullable(),
     ),
     ocupacion: optionalText(120),
+    // Opcional: sirve para la felicitacion de cumpleanos por WhatsApp.
+    fecha_nacimiento: z.preprocess(
+      (v) => (v == null || v === "" ? null : v),
+      z
+        .string()
+        .regex(/^\d{4}-\d{2}-\d{2}$/, "La fecha de nacimiento no es válida")
+        .refine((d) => d >= "1900-01-01" && d <= new Date().toISOString().slice(0, 10), "La fecha de nacimiento no es válida")
+        .nullable(),
+    ),
     acepta_whatsapp: z.preprocess((v) => v === "on" || v === "true", z.boolean()),
   })
   .superRefine((p, ctx) => {

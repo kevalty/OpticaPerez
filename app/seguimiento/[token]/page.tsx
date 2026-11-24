@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { cache } from "react";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { NEGOCIO } from "@/lib/negocio";
+import { ConfirmarEntrega } from "@/components/confirmar-entrega";
+import { GARANTIA, NEGOCIO } from "@/lib/negocio";
 import { ESTADOS_PEDIDO, SEDE_ENTREGA, estadoInfo, fechaCorta, indiceEstado, lineasEspecificaciones, type Especificaciones } from "@/lib/pedidos";
 import { createClient } from "@/lib/supabase/server";
 import { dinero } from "@/lib/ventas";
@@ -15,6 +16,8 @@ type Seg = {
   items: { nombre: string | null; cantidad: number }[];
   especificaciones: Especificaciones;
   historial: { estado: string; fecha: string }[];
+  fotos?: { id: string }[];
+  confirmacion?: { fecha: string; via: string } | null;
 };
 
 const cargar = cache(async (token: string) => {
@@ -34,8 +37,10 @@ export async function generateMetadata({ params }: PageProps<"/seguimiento/[toke
   };
 }
 
-export default async function SeguimientoPage({ params }: PageProps<"/seguimiento/[token]">) {
+export default async function SeguimientoPage({ params, searchParams }: PageProps<"/seguimiento/[token]">) {
   const { token } = await params;
+  const sp = await searchParams;
+  const via = sp.via === "ipad" ? "ipad" : "whatsapp";
   const s = await cargar(token);
   const sucursal = NEGOCIO.sucursales[0];
 
@@ -46,6 +51,8 @@ export default async function SeguimientoPage({ params }: PageProps<"/seguimient
   const spec = lineasEspecificaciones(s.especificaciones);
   const fechaDe = (id: string) => [...s.historial].reverse().find((h) => h.estado === id)?.fecha;
   const listo = s.estado === "listo_para_recibir";
+  const entregado = s.estado === "entregado";
+  const fotos = s.fotos ?? [];
 
   return (
     <main className="mx-auto flex w-full max-w-lg flex-col gap-4 px-4 py-6">
@@ -62,6 +69,40 @@ export default async function SeguimientoPage({ params }: PageProps<"/seguimient
           <p className="mt-3 rounded-xl bg-white/70 px-3 py-2 text-sm">Fecha estimada: <strong>{fechaCorta(s.fecha_entrega)}</strong></p>
         )}
       </section>
+
+      {fotos.length > 0 && (
+        <section className="rounded-2xl bg-white p-5 ring-1 ring-brand/10">
+          <h2 className="mb-3 font-semibold text-brand">Así entregamos tu pedido</h2>
+          <ul className="flex flex-col gap-3">
+            {fotos.map((f) => (
+              <li key={f.id}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={`/seguimiento/${token}/foto/${f.id}`} alt="Foto de la entrega de tu pedido" loading="lazy" className="w-full rounded-xl object-cover ring-1 ring-brand/10" />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {entregado && (
+        <section className="rounded-2xl bg-white p-5 ring-1 ring-brand/10">
+          {s.confirmacion ? (
+            <>
+              <h2 className="mb-1 font-semibold text-emerald-700">✓ Entrega confirmada</h2>
+              <p className="text-sm text-brand-dark/80">Gracias por confirmar el {fechaCorta(s.confirmacion.fecha)}. Tu garantía de {GARANTIA.meses} meses ya está activa; guarda este enlace o tu N.º de pedido para hacerla valer.</p>
+              <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-brand-dark/80">
+                {GARANTIA.puntos.map((p) => <li key={p}>{p}</li>)}
+              </ul>
+            </>
+          ) : (
+            <>
+              <h2 className="mb-1 font-semibold text-brand">Confirma tu entrega</h2>
+              <p className="mb-3 text-sm text-brand-dark/70">Cuéntanos que recibiste tu pedido en perfecto estado y conoce tu garantía.</p>
+              <ConfirmarEntrega token={token} via={via} />
+            </>
+          )}
+        </section>
+      )}
 
       <section className="rounded-2xl bg-white p-5 ring-1 ring-brand/10">
         <h2 className="mb-3 font-semibold text-brand">¿Cómo va tu pedido?</h2>

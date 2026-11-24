@@ -1,10 +1,14 @@
 // Fotos de productos (inventario). Bucket privado "productos" en Supabase Storage.
 // El navegador nunca habla con Storage: sube la foto al servidor y la ve a traves de /dashboard/fotos/...
 export const BUCKET_FOTOS = "productos";
+export const BUCKET_RECETAS = "recetas";
+export const BUCKET_ENTREGAS = "entregas";
 export const MAX_FOTO_BYTES = 3 * 1024 * 1024; // el navegador ya la reduce a unos cientos de KB
 // El nombre del archivo cambia con cada foto nueva: usarlo como version evita que el navegador muestre la foto vieja guardada en cache.
 export const versionFoto = (path: string | null | undefined): string | null => (path ? (path.split("/").pop() ?? "").slice(0, 12) : null);
 export const urlFotoProducto = (id: string, version?: string | null) => `/dashboard/fotos/producto/${id}${version ? `?v=${version}` : ""}`;
+export const urlFotoReceta = (ordenId: string) => `/dashboard/fotos/receta/${ordenId}`;
+export const urlFotoEntrega = (fotoId: string) => `/dashboard/fotos/entrega/${fotoId}`;
 export const urlFotoVenta = (itemId: string) => `/dashboard/fotos/venta/${itemId}`;
 
 // Reconoce la imagen por su contenido (no por el nombre ni el tipo que declara el cliente).

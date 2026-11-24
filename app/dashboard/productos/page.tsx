@@ -5,11 +5,11 @@ import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { btnGhost, btnPrimary, card, inputCls } from "@/lib/ui";
 import { cleanSearch } from "@/lib/validation";
-import { dinero, tipoLabel } from "@/lib/ventas";
+import { detalleProducto, dinero, tipoLabel } from "@/lib/ventas";
 
 export const metadata = { title: "Productos · Óptica Pérez" };
 
-type P = { id: string; nombre: string; tipo: string; precio: number; stock: number; stock_minimo: number; controla_stock: boolean; codigo: string | null; foto_path: string | null };
+type P = { id: string; nombre: string; tipo: string; precio: number; stock: number; stock_minimo: number; controla_stock: boolean; codigo: string | null; marca: string | null; modelo: string | null; color: string | null; foto_path: string | null };
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 const AVISO: Record<string, string> = { creado: "Producto creado.", guardado: "Cambios guardados.", archivado: "Producto archivado." };
 
@@ -21,8 +21,8 @@ export default async function ProductosPage({ searchParams }: PageProps<"/dashbo
   const ok = AVISO[one(sp.ok) ?? ""];
 
   const supabase = await createClient();
-  let query = supabase.from("products").select("id, nombre, tipo, precio, stock, stock_minimo, controla_stock, codigo, foto_path").is("deleted_at", null).order("tipo").order("nombre").limit(300);
-  if (q) query = query.or(`nombre.ilike.%${q}%,codigo.ilike.%${q}%`);
+  let query = supabase.from("products").select("id, nombre, tipo, precio, stock, stock_minimo, controla_stock, codigo, marca, modelo, color, foto_path").is("deleted_at", null).order("tipo").order("nombre").limit(300);
+  if (q) query = query.or(`nombre.ilike.%${q}%,codigo.ilike.%${q}%,marca.ilike.%${q}%,modelo.ilike.%${q}%,color.ilike.%${q}%`);
   const { data, error } = await query;
   const productos = (data ?? []) as P[];
   const bajos = productos.filter((p) => p.controla_stock && p.stock <= p.stock_minimo).length;
@@ -38,7 +38,7 @@ export default async function ProductosPage({ searchParams }: PageProps<"/dashbo
       {error && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">No se pudo cargar el catálogo (puede faltar la migración 0008).</p>}
 
       <form action="/dashboard/productos" className="flex gap-2">
-        <input name="q" defaultValue={q} placeholder="Buscar por nombre o código" maxLength={60} autoComplete="off" className={inputCls} />
+        <input name="q" defaultValue={q} placeholder="Buscar por nombre, marca, modelo, color o código" maxLength={60} autoComplete="off" className={inputCls} />
         <button className={btnGhost}>Buscar</button>
       </form>
       {bajos > 0 && <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">{bajos} producto{bajos === 1 ? "" : "s"} con stock bajo o agotado.</p>}
@@ -56,6 +56,7 @@ export default async function ProductosPage({ searchParams }: PageProps<"/dashbo
                   <span>
                   <span className="font-medium text-brand">{p.nombre}</span>
                   <span className="ml-2 text-xs text-brand-dark/60">{tipoLabel(p.tipo)}{p.codigo ? ` · ${p.codigo}` : ""}</span>
+                  {detalleProducto(p) && <span className="block text-xs text-brand-dark/70">{detalleProducto(p)}</span>}
                   </span>
                 </span>
                 <span className="flex items-center gap-3 text-sm">

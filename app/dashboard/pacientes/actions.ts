@@ -29,7 +29,7 @@ export async function createPatient(_prev: FormState, formData: FormData): Promi
   if (error || !data) {
     if (error) console.error("createPatient fallo:", error.code);
     if (error?.code === "42703" || error?.code === "PGRST204")
-      return { error: msg("La base de datos no está actualizada (falta la migración 0006). Avisa al administrador."), values: valores(formData) };
+      return { error: msg("La base de datos no está actualizada (faltan migraciones, ver supabase/README.md). Avisa al administrador."), values: valores(formData) };
     if (error?.code === "23505") return { error: msg("Ya existe un paciente registrado con ese número de documento."), values: valores(formData) };
     return { error: msg("No se pudo guardar el paciente. Inténtalo de nuevo."), values: valores(formData) };
   }

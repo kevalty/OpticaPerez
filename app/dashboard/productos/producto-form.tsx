@@ -7,7 +7,7 @@ import { TIPOS_PRODUCTO } from "@/lib/ventas";
 import { btnGhost, btnPrimary, inputCls } from "@/lib/ui";
 import type { FormState } from "@/lib/validation";
 
-type Inicial = { nombre?: string; tipo?: string; codigo?: string | null; precio?: number; stock_minimo?: number; controla_stock?: boolean };
+type Inicial = { nombre?: string; tipo?: string; marca?: string | null; modelo?: string | null; color?: string | null; codigo?: string | null; precio?: number; stock_minimo?: number; controla_stock?: boolean };
 
 export function ProductoForm({
   action,
@@ -27,6 +27,7 @@ export function ProductoForm({
   const errorRef = useRef<HTMLParagraphElement>(null);
   const v = (c: string, ini: string | number | null | undefined) => state.values?.[c] ?? String(ini ?? "");
   const [tipo, setTipo] = useState(initial.tipo ?? "montura");
+  const conMarca = tipo === "montura" || tipo === "gafa";
   const [controla, setControla] = useState(state.values ? state.values.controla_stock === "on" : (initial.controla_stock ?? true));
   useEffect(() => {
     if (state.error) errorRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
@@ -42,9 +43,26 @@ export function ProductoForm({
     >
       <FotoCampo actual={fotoActual} onChange={setFoto} />
       <label className="flex flex-col gap-1 text-sm font-medium text-brand">
-        Nombre *
-        <input name="nombre" required maxLength={200} defaultValue={v("nombre", initial.nombre)} autoComplete="off" className={inputCls} />
+        {conMarca ? "Nombre (opcional)" : "Nombre *"}
+        <input name="nombre" required={!conMarca} maxLength={200} defaultValue={v("nombre", initial.nombre)} autoComplete="off" className={inputCls} />
+        {conMarca && <span className="text-xs font-normal text-brand-dark/60">Si lo dejas vacío, se arma con la marca, el modelo y el color.</span>}
       </label>
+      {tipo !== "servicio" && (
+        <div className="grid gap-4 sm:grid-cols-3">
+          <label className="flex flex-col gap-1 text-sm font-medium text-brand">
+            Marca
+            <input name="marca" maxLength={60} defaultValue={v("marca", initial.marca)} autoComplete="off" className={inputCls} />
+          </label>
+          <label className="flex flex-col gap-1 text-sm font-medium text-brand">
+            Modelo
+            <input name="modelo" maxLength={60} defaultValue={v("modelo", initial.modelo)} autoComplete="off" className={inputCls} />
+          </label>
+          <label className="flex flex-col gap-1 text-sm font-medium text-brand">
+            Color
+            <input name="color" maxLength={60} defaultValue={v("color", initial.color)} autoComplete="off" className={inputCls} />
+          </label>
+        </div>
+      )}
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="flex flex-col gap-1 text-sm font-medium text-brand">
           Tipo *

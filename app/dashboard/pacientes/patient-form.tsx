@@ -16,6 +16,7 @@ type Initial = {
   direccion?: string | null;
   edad?: number | null;
   ocupacion?: string | null;
+  fecha_nacimiento?: string | null;
 };
 
 export function PatientForm({
@@ -82,10 +83,15 @@ export function PatientForm({
         <input name="email" type="email" required maxLength={120} autoComplete="off" defaultValue={v("email", initial.email)} placeholder="nombre@correo.com" className={inputCls} />
         <span className="text-xs font-normal text-brand-dark/60">Se puede repetir entre pacientes (por ejemplo, una familia con el mismo correo).</span>
       </label>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-3">
         <label className="flex flex-col gap-1 text-sm font-medium text-brand">
           Edad
           <input name="edad" type="number" min={0} max={130} defaultValue={v("edad", initial.edad)} className={inputCls} />
+        </label>
+        <label className="flex flex-col gap-1 text-sm font-medium text-brand">
+          Fecha de nacimiento
+          <input name="fecha_nacimiento" type="date" min="1900-01-01" defaultValue={v("fecha_nacimiento", initial.fecha_nacimiento)} className={inputCls} />
+          <span className="text-xs font-normal text-brand-dark/60">Opcional. Para felicitarlo en su cumpleaños.</span>
         </label>
         <label className="flex flex-col gap-1 text-sm font-medium text-brand">
           Ocupación

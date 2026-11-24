@@ -25,3 +25,25 @@ export const NEGOCIO = {
     },
   ],
 };
+
+// ---------------------------------------------------------------------------------------------------------------
+// POR CONFIRMAR CON EL CLIENTE (maqueta, nov. 2026): descuentos de los mensajes de WhatsApp y texto de la garantia.
+// Mas adelante se editaran desde el panel administrativo.
+// ---------------------------------------------------------------------------------------------------------------
+export const PROMOCIONES = {
+  descuentoCumpleanos: "10 %", // mensaje de cumpleanos
+  descuentoRenovacion: "10 %", // renovacion de lunas (a partir de los 6 meses de la entrega)
+};
+
+// Condiciones de garantia que el cliente ve y acepta al recibir su pedido (por su enlace o en el iPad de la optica).
+// TEXTO DE EJEMPLO: la optica debe entregar el texto real (meses de cobertura, que cubre y que no).
+export const GARANTIA = {
+  meses: 6,
+  titulo: "Garantía de tu pedido",
+  puntos: [
+    "Tus lentes y montura tienen garantía de 6 meses contra defectos de fabricación.",
+    "Cubre fallas del material o del armado; no cubre golpes, caídas, rayones por mal uso ni pérdida.",
+    "Para hacerla efectiva presenta tu comprobante o el N.º de tu pedido en cualquiera de nuestros locales.",
+    "Si sientes molestias al adaptarte, vuelve a vernos: revisamos y ajustamos tus lentes sin costo.",
+  ],
+};
