@@ -195,13 +195,13 @@ export function FichaForm({
 
       <div className={modo === "completa" ? "lg:grid lg:grid-cols-[14rem_1fr] lg:gap-5" : ""}>
         {modo === "completa" && (
-          <nav aria-label="Secciones de la ficha" className="-mx-1 mb-3 flex gap-2 overflow-x-auto px-1 pb-1 lg:mb-0 lg:flex-col lg:overflow-visible">
+          <nav aria-label="Secciones de la ficha" className="mb-3 grid grid-cols-3 gap-2 lg:mb-0 lg:flex lg:flex-col">
             {SECCIONES.map((s, i) => {
               const hecha = hechas.has(s.id) && activa !== s.id;
               return (
-                <button key={s.id} type="button" onClick={() => setActiva(s.id)} aria-current={activa === s.id ? "step" : undefined} className={`flex min-h-12 shrink-0 items-center gap-3 rounded-xl border px-3 py-2 text-left text-sm font-semibold ${activa === s.id ? "border-brand bg-white text-brand shadow" : hecha ? "border-transparent text-emerald-700" : "border-transparent text-brand-dark/60 hover:bg-iris-light/50"}`}>
+                <button key={s.id} type="button" onClick={() => setActiva(s.id)} aria-current={activa === s.id ? "step" : undefined} className={`flex min-h-12 min-w-0 items-center gap-2 rounded-xl border px-2 py-2 text-left text-xs font-semibold sm:gap-3 sm:px-3 sm:text-sm ${activa === s.id ? "border-brand bg-white text-brand shadow" : hecha ? "border-transparent text-emerald-700" : "border-transparent text-brand-dark/60 hover:bg-iris-light/50"}`}>
                   <span className={`flex size-7 shrink-0 items-center justify-center rounded-full text-xs ${activa === s.id ? "bg-brand text-white" : hecha ? "bg-emerald-600 text-white" : "bg-iris-light text-brand"}`}>{hecha ? "✓" : i + 1}</span>
-                  <span className="whitespace-nowrap lg:whitespace-normal">{s.titulo}</span>
+                  <span className="min-w-0 leading-tight">{s.titulo}</span>
                 </button>
               );
             })}
@@ -214,7 +214,7 @@ export function FichaForm({
           </nav>
         )}
 
-        <div className={modo === "rapida" ? "grid items-start gap-4 lg:grid-cols-[1.25fr_1fr] lg:grid-rows-[auto_1fr]" : "min-w-0"}>
+        <div className={modo === "rapida" ? "grid grid-cols-[minmax(0,1fr)] items-start gap-4 lg:grid-cols-[1.25fr_1fr] lg:grid-rows-[auto_1fr]" : "min-w-0"}>
           {/* ---- Observaciones ---- */}
           <section data-sec="obs" className={`${ocultar("obs")} ${columna("obs")} ${cardCls}`}>
             <h4 className={h4}>Motivo y observaciones</h4>
@@ -246,12 +246,12 @@ export function FichaForm({
           <section data-sec="rx" className={`${ocultar("rx")} ${columna("rx")} ${cardCls}`}>
             <h4 className={h4}>Rx final</h4>
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[34rem] border-separate border-spacing-y-1.5 text-left text-sm">
+              <table className="w-full table-fixed border-separate border-spacing-y-1.5 text-left text-sm sm:table-auto sm:min-w-[34rem]">
                 <thead>
                   <tr className="text-[11px] uppercase tracking-wide text-brand-dark/50">
-                    <th className="px-1 font-medium"></th>
+                    <th className="w-8 px-1 font-medium sm:w-auto"></th>
                     {RX_CAMPOS.map((c) => (
-                      <th key={c.key} className="px-1 font-medium">{c.label}</th>
+                      <th key={c.key} className="px-0.5 text-[10px] font-medium sm:px-1 sm:text-[11px]">{c.label}</th>
                     ))}
                   </tr>
                 </thead>
@@ -260,7 +260,7 @@ export function FichaForm({
                     <tr key={o.id}>
                       <th className="pr-2 font-bold text-brand">{o.id}</th>
                       {RX_CAMPOS.map((c) => (
-                        <td key={c.key} className="px-1">
+                        <td key={c.key} className="px-0.5 sm:px-1">
                           {"text" in c ? (
                             <input name={`rx_${o.suf}_${c.key}`} maxLength={30} aria-label={`${c.label} ${o.id}`} className={small} />
                           ) : (
@@ -428,7 +428,7 @@ export function FichaForm({
 function TablaPares({ keys, prefill }: { keys: string[]; prefill: { rx_anterior_od?: string; rx_anterior_oi?: string } }) {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[26rem] border-separate border-spacing-y-1.5 text-left text-sm">
+      <table className="w-full border-separate border-spacing-y-1.5 text-left text-sm sm:min-w-[26rem]">
         <thead>
           <tr className="text-[11px] uppercase tracking-wide text-brand-dark/50">
             <th className="px-1 font-medium"></th>

@@ -44,7 +44,7 @@ const celda = (v: string | number): string => {
   if (typeof v === "number") return String(Math.round(v * 100) / 100).replace(".", ",");
   let t = v.replace(/\r?\n/g, " ");
   if (/^[=+\-@\t]/.test(t)) t = `'${t}`;
-  return /[;"]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t;
+  return `"${t.replace(/"/g, '""')}"`; // los textos siempre van entre comillas (y los que empiezan con = + - @ con apostrofo delante)
 };
 
 export function aCsv(filas: (string | number)[][]): string {
