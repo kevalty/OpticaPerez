@@ -29,6 +29,7 @@ Aplica en orden, una vez cada una, en el SQL Editor:
 - `0019_tipo_gafa.sql` (**ejecutar sola**) y `0020_peticion_cliente.sql` (maqueta de la petición del cliente: marca/modelo/color y tipo gafa, fecha de nacimiento, receta externa, fotos de entrega y confirmación con garantía, WhatsApp de cumpleaños, renovación y entrega).
 - `0021_reportes.sql` (Semana 9: función `reporte_ventas` para los reportes de ventas, solo administrador).
 - `0022_plantillas_v2.sql` (plantillas de WhatsApp aprobadas por Meta: nombres `_v2` y activación de las 9; ejecutar solo cuando Meta ya las aprobó).
+- `0023_edad_nacimiento.sql` (calcula la edad de pacientes con fecha de nacimiento y sin edad).
 
 ## Datos del doctor que salen en el certificado
 El nombre y el registro del Ministerio de Salud Publica se imprimen bajo la firma. Hasta que exista la
