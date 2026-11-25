@@ -66,6 +66,12 @@ ICONOS.reportes = (
     <rect x="17" y="5" width="3" height="12" rx="0.8" />
   </>
 );
+ICONOS.auditoria = (
+  <>
+    <path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6z" />
+    <path d="M9 12l2.2 2.2L15.5 10" />
+  </>
+);
 ICONOS.admin = (
   <>
     <rect x="4" y="4" width="7" height="7" rx="1.5" />
